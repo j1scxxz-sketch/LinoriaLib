@@ -2465,7 +2465,8 @@ local MultiSlider = {
             Min = Info.Min;
             Max = Info.Max;
             Rounding = Info.Rounding;
-            MaxSize = 0;
+            MinMaxSize = 0;
+            MaxMaxSize = 0;
             Type = 'MultiSlider';
             Callback = Info.Callback or function(Values) end;
         };
@@ -2602,12 +2603,12 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
 
         -- Update MaxSize when sliders are resized
         MinSlider.Inner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-            MultiSlider.MaxSize = MinSlider.Inner.AbsoluteSize.X;
+            MultiSlider.MinMaxSize = MinSlider.Inner.AbsoluteSize.X;
             MultiSlider:Display();
         end);
 
         MaxSlider.Inner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-            MultiSlider.MaxSize = MaxSlider.Inner.AbsoluteSize.X;
+            MultiSlider.MaxMaxSize = MaxSlider.Inner.AbsoluteSize.X;
             MultiSlider:Display();
         end);
 
@@ -2617,14 +2618,14 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
             MinSlider.Label.Text = 'Min: ' .. MultiSlider.MinValue .. Suffix;
             MaxSlider.Label.Text = 'Max: ' .. MultiSlider.MaxValue .. Suffix;
 
-            local MinX = math.ceil(Library:MapValue(MultiSlider.MinValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MaxSize));
-            local MaxX = math.ceil(Library:MapValue(MultiSlider.MaxValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MaxSize));
+            local MinX = math.ceil(Library:MapValue(MultiSlider.MinValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MinMaxSize));
+            local MaxX = math.ceil(Library:MapValue(MultiSlider.MaxValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MaxMaxSize));
             
             MinSlider.Fill.Size = UDim2.new(0, MinX, 1, 0);
             MaxSlider.Fill.Size = UDim2.new(0, MaxX, 1, 0);
 
-            MinSlider.HideBorder.Visible = not (MinX == MultiSlider.MaxSize or MinX == 0);
-            MaxSlider.HideBorder.Visible = not (MaxX == MultiSlider.MaxSize or MaxX == 0);
+            MinSlider.HideBorder.Visible = not (MinX == MultiSlider.MinMaxSize or MinX == 0);
+            MaxSlider.HideBorder.Visible = not (MaxX == MultiSlider.MaxMaxSize or MaxX == 0);
         end;
 
         function MultiSlider:OnChanged(Func)
@@ -2639,8 +2640,9 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
             return tonumber(string.format('%.' .. MultiSlider.Rounding .. 'f', Value))
         end;
 
-        function MultiSlider:GetValueFromXOffset(X)
-            return Round(Library:MapValue(X, 0, MultiSlider.MaxSize, MultiSlider.Min, MultiSlider.Max));
+function MultiSlider:GetValueFromXOffset(X, IsMin)
+            local MaxSize = IsMin and MultiSlider.MinMaxSize or MultiSlider.MaxMaxSize;
+            return Round(Library:MapValue(X, 0, MaxSize, MultiSlider.Min, MultiSlider.Max));
         end;
 
         function MultiSlider:SetMin(Value)
@@ -2667,7 +2669,7 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
             Library:SafeCallback(MultiSlider.Changed, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
         end;
 
-        MinSlider.Inner.InputBegan:Connect(function(Input)
+MinSlider.Inner.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
                 local mPos = Mouse.X;
                 local gPos = MinSlider.Fill.Size.X.Offset;
@@ -2675,9 +2677,9 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
 
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                     local nMPos = Mouse.X;
-                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MaxSize);
+                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MinMaxSize);
 
-                    local nValue = MultiSlider:GetValueFromXOffset(nX);
+                    local nValue = MultiSlider:GetValueFromXOffset(nX, true);
                     
                     -- Don't allow min to go above max
                     if nValue <= MultiSlider.MaxValue then
@@ -2701,7 +2703,7 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
             end;
         end);
 
-        MaxSlider.Inner.InputBegan:Connect(function(Input)
+MaxSlider.Inner.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
                 local mPos = Mouse.X;
                 local gPos = MaxSlider.Fill.Size.X.Offset;
@@ -2709,9 +2711,9 @@ local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
 
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
                     local nMPos = Mouse.X;
-                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MaxSize);
+                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MaxMaxSize);
 
-                    local nValue = MultiSlider:GetValueFromXOffset(nX);
+                    local nValue = MultiSlider:GetValueFromXOffset(nX, false);
                     
                     -- Don't allow max to go below min
                     if nValue >= MultiSlider.MinValue then
