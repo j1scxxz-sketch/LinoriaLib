@@ -164,9 +164,9 @@ end;
 function Library:MakeDraggable(Instance, Cutoff)
     Instance.Active = true;
 
-    local DragPreview = Library:Create('Frame', {
-        BackgroundColor3 = Color3.new(0, 0, 0);
-        BackgroundTransparency = 1;
+local DragPreview = Library:Create('Frame', {
+        BackgroundColor3 = Library.AccentColor;
+        BackgroundTransparency = 0.75;
         BorderColor3 = Library.AccentColor;
         BorderSizePixel = 2;
         Size = Instance.Size;
@@ -178,6 +178,7 @@ function Library:MakeDraggable(Instance, Cutoff)
     });
 
     Library:AddToRegistry(DragPreview, {
+        BackgroundColor3 = 'AccentColor';
         BorderColor3 = 'AccentColor';
     });
 
@@ -195,7 +196,6 @@ function Library:MakeDraggable(Instance, Cutoff)
 DragPreview.Size = Instance.Size;
             DragPreview.Position = Instance.Position;
             DragPreview.AnchorPoint = Instance.AnchorPoint;
-            DragPreview.BackgroundTransparency = 0.95;
             DragPreview.Visible = true;
 
             while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
@@ -209,9 +209,8 @@ DragPreview.Size = Instance.Size;
                 RenderStepped:Wait();
             end;
 
-            Instance.Position = DragPreview.Position;
+Instance.Position = DragPreview.Position;
             DragPreview.Visible = false;
-            DragPreview.BackgroundTransparency = 1;
         end;
     end)
 end;
@@ -2072,7 +2071,7 @@ end;
         assert(Info.Max, 'AddSlider: Missing maximum value.');
         assert(Info.Rounding, 'AddSlider: Missing rounding value.');
 
-        local Slider = {
+local Slider = {
             Value = Info.Default;
             Min = Info.Min;
             Max = Info.Max;
@@ -2080,6 +2079,9 @@ end;
             MaxSize = 232;
             Type = 'Slider';
             Callback = Info.Callback or function(Value) end;
+            UpdateMaxSize = function(self)
+                self.MaxSize = SliderInner.AbsoluteSize.X;
+            end;
         };
 
         local Groupbox = self;
@@ -2124,6 +2126,11 @@ end;
             BackgroundColor3 = 'MainColor';
             BorderColor3 = 'OutlineColor';
         });
+
+        SliderInner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+            Slider.MaxSize = SliderInner.AbsoluteSize.X;
+            Slider:Display();
+        end);
 
         local Fill = Library:Create('Frame', {
             BackgroundColor3 = Library.AccentColor;
