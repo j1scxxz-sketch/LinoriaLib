@@ -1893,13 +1893,18 @@ do
             Library:AddToolTip(Info.Tooltip, ToggleRegion)
         end
 
-        function Toggle:Display()
-            ToggleInner.BackgroundColor3 = Toggle.Value and Library.AccentColor or Library.MainColor;
-            ToggleInner.BorderColor3 = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
+function Toggle:Display()
+    local targetColor = Toggle.Value and Library.AccentColor or Library.MainColor;
+    local targetBorder = Toggle.Value and Library.AccentColorDark or Library.OutlineColor;
 
-            Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
-            Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
-        end;
+    TweenService:Create(ToggleInner, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundColor3 = targetColor,
+        BorderColor3 = targetBorder
+    }):Play();
+
+    Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
+    Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
+end;
 
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func;
@@ -2111,33 +2116,48 @@ do
             Library:SafeCallback(Slider.Changed, Slider.Value);
         end;
 
-        SliderInner.InputBegan:Connect(function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
-                local mPos = Mouse.X;
-                local gPos = Fill.Size.X.Offset;
-                local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
+SliderInner.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+        local mPos = Mouse.X;
+        local gPos = Fill.Size.X.Offset;
+        local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
 
-                while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                    local nMPos = Mouse.X;
-                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
+        while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+            local nMPos = Mouse.X;
+            local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
 
-                    local nValue = Slider:GetValueFromXOffset(nX);
-                    local OldValue = Slider.Value;
-                    Slider.Value = nValue;
+            local nValue = Slider:GetValueFromXOffset(nX);
+            local OldValue = Slider.Value;
+            Slider.Value = nValue;
 
-                    Slider:Display();
+            -- Smooth slider animation
+            TweenService:Create(Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, nX, 1, 0)
+            }):Play();
 
-                    if nValue ~= OldValue then
-                        Library:SafeCallback(Slider.Callback, Slider.Value);
-                        Library:SafeCallback(Slider.Changed, Slider.Value);
-                    end;
+            -- Update text immediately
+            local Suffix = Info.Suffix or '';
+            if Info.Compact then
+                DisplayLabel.Text = Info.Text .. ': ' .. Slider.Value .. Suffix
+            elseif Info.HideMax then
+                DisplayLabel.Text = string.format('%s', Slider.Value .. Suffix)
+            else
+                DisplayLabel.Text = string.format('%s/%s', Slider.Value .. Suffix, Slider.Max .. Suffix);
+            end
 
-                    RenderStepped:Wait();
-                end;
+            HideBorderRight.Visible = not (nX == Slider.MaxSize or nX == 0);
 
-                Library:AttemptSave();
+            if nValue ~= OldValue then
+                Library:SafeCallback(Slider.Callback, Slider.Value);
+                Library:SafeCallback(Slider.Changed, Slider.Value);
             end;
-        end);
+
+            RenderStepped:Wait();
+        end;
+
+        Library:AttemptSave();
+    end;
+end);
 
         Slider:Display();
         Groupbox:AddBlank(Info.BlankSize or 6);
@@ -2486,17 +2506,24 @@ do
             Dropdown:BuildDropdownList();
         end;
 
-        function Dropdown:OpenDropdown()
-            ListOuter.Visible = true;
-            Library.OpenedFrames[ListOuter] = true;
-            DropdownArrow.Rotation = 180;
-        end;
+function Dropdown:OpenDropdown()
+    ListOuter.Visible = true;
+    Library.OpenedFrames[ListOuter] = true;
+    
+    TweenService:Create(DropdownArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Rotation = 180
+    }):Play();
+end;
 
-        function Dropdown:CloseDropdown()
-            ListOuter.Visible = false;
-            Library.OpenedFrames[ListOuter] = nil;
-            DropdownArrow.Rotation = 0;
-        end;
+function Dropdown:CloseDropdown()
+    TweenService:Create(DropdownArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Rotation = 0
+    }):Play();
+    
+    task.wait(0.2);
+    ListOuter.Visible = false;
+    Library.OpenedFrames[ListOuter] = nil;
+end;
 
         function Dropdown:OnChanged(Func)
             Dropdown.Changed = Func;
@@ -3087,13 +3114,13 @@ local WindowLabel = Library:CreateLabel({
             Parent = TabButton;
         });
 
-        local TabIndicator = Library:Create('Frame', {
+local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 0, 0);
+    Position = UDim2.new(0, 0, 1, -2);
     Size = UDim2.new(1, 0, 0, 2);
     BackgroundTransparency = 1;
-    ZIndex = 2;
+    ZIndex = 10;
     Parent = TabButton;
 });
 
@@ -3388,6 +3415,20 @@ local GroupboxLabel = Library:CreateLabel({
                     Parent = Button;
                 });
 
+                local TabboxIndicator = Library:Create('Frame', {
+    BackgroundColor3 = Library.AccentColor;
+    BorderSizePixel = 0;
+    Position = UDim2.new(0, 0, 1, -2);
+    Size = UDim2.new(1, 0, 0, 2);
+    BackgroundTransparency = 1;
+    ZIndex = 10;
+    Parent = Button;
+});
+
+Library:AddToRegistry(TabboxIndicator, {
+    BackgroundColor3 = 'AccentColor';
+});
+
                 local Block = Library:Create('Frame', {
                     BackgroundColor3 = Library.BackgroundColor;
                     BorderSizePixel = 0;
@@ -3417,27 +3458,37 @@ local GroupboxLabel = Library:CreateLabel({
                     Parent = Container;
                 });
 
-                function Tab:Show()
-                    for _, Tab in next, Tabbox.Tabs do
-                        Tab:Hide();
-                    end;
+function Tab:Show()
+    for _, Tab in next, Tabbox.Tabs do
+        Tab:Hide();
+    end;
 
-                    Container.Visible = true;
-                    Block.Visible = true;
+    Container.Visible = true;
+    Block.Visible = true;
 
-                    Button.BackgroundColor3 = Library.BackgroundColor;
-                    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor';
+    Button.BackgroundColor3 = Library.BackgroundColor;
+    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'BackgroundColor';
 
-                    Tab:Resize();
-                end;
+    -- Animate indicator in
+    TweenService:Create(TabboxIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0
+    }):Play();
 
-                function Tab:Hide()
-                    Container.Visible = false;
-                    Block.Visible = false;
+    Tab:Resize();
+end;
 
-                    Button.BackgroundColor3 = Library.MainColor;
-                    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor';
-                end;
+function Tab:Hide()
+    Container.Visible = false;
+    Block.Visible = false;
+
+    Button.BackgroundColor3 = Library.MainColor;
+    Library.RegistryMap[Button].Properties.BackgroundColor3 = 'MainColor';
+
+    -- Animate indicator out
+    TweenService:Create(TabboxIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 1
+    }):Play();
+end;
 
                 function Tab:Resize()
                     local TabCount = 0;
