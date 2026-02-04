@@ -2582,8 +2582,8 @@ local ListInner = Library:Create('Frame', {
             Parent = ListOuter;
         });
 
-        Library:AddToRegistry(ListInner, {
-            BackgroundColor3 = 'MainColor';
+Library:AddToRegistry(ListInner, {
+            BackgroundColor3 = 'BackgroundColor';
             BorderColor3 = 'OutlineColor';
         });
 
