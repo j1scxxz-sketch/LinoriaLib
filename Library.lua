@@ -3665,6 +3665,11 @@ end;
                 BorderColor3 = 'OutlineColor';
             });
 
+            Library:Create('UICorner', {
+            CornerRadius = UDim.new(0, 4);
+            Parent = BoxOuter;
+        });
+
             local BoxInner = Library:Create('Frame', {
                 BackgroundColor3 = Library.BackgroundColor;
                 BorderColor3 = Color3.new(0, 0, 0);
