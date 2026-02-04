@@ -2264,12 +2264,12 @@ local Slider = {
 
 local FillGradient = Library:Create('UIGradient', {
             Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Library.AccentColor),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(
-                    math.max(0, Library.AccentColor.R * 255 - 15),
-                    math.max(0, Library.AccentColor.G * 255 - 15),
-                    math.max(0, Library.AccentColor.B * 255 - 15)
-                ))
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(
+                    math.min(255, Library.AccentColor.R * 255 + 20),
+                    math.min(255, Library.AccentColor.G * 255 + 20),
+                    math.min(255, Library.AccentColor.B * 255 + 20)
+                )),
+                ColorSequenceKeypoint.new(1, Library.AccentColor)
             });
             Rotation = 0;
             Parent = Fill;
@@ -2278,12 +2278,12 @@ local FillGradient = Library:Create('UIGradient', {
         Library:AddToRegistry(FillGradient, {
             Color = function()
                 return ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Library.AccentColor),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(
-                        math.max(0, Library.AccentColor.R * 255 - 15),
-                        math.max(0, Library.AccentColor.G * 255 - 15),
-                        math.max(0, Library.AccentColor.B * 255 - 15)
-                    ))
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(
+                        math.min(255, Library.AccentColor.R * 255 + 20),
+                        math.min(255, Library.AccentColor.G * 255 + 20),
+                        math.min(255, Library.AccentColor.B * 255 + 20)
+                    )),
+                    ColorSequenceKeypoint.new(1, Library.AccentColor)
                 });
             end
         });
@@ -2544,16 +2544,11 @@ end);
         local MAX_DROPDOWN_ITEMS = 8;
 
 local ListOuter = Library:Create('Frame', {
-            BackgroundColor3 = Library.BackgroundColor;
-            BorderColor3 = Library.OutlineColor;
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            BorderColor3 = Color3.new(0, 0, 0);
             ZIndex = 20;
             Visible = false;
             Parent = ScreenGui;
-        });
-
-        Library:AddToRegistry(ListOuter, {
-            BackgroundColor3 = 'BackgroundColor';
-            BorderColor3 = 'OutlineColor';
         });
 
 local function RecalculateListPosition()
@@ -3370,6 +3365,10 @@ local WindowLabel = Library:CreateLabel({
     TextXAlignment = Enum.TextXAlignment.Center;
     ZIndex = 1;
     Parent = Inner;
+});
+
+Library:AddToRegistry(WindowLabel, {
+    TextColor3 = 'AccentColor';
 });
 
 local AnimatedTitle = {
