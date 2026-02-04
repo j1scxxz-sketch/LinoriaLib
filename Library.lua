@@ -164,6 +164,22 @@ end;
 function Library:MakeDraggable(Instance, Cutoff)
     Instance.Active = true;
 
+    local DragPreview = Library:Create('Frame', {
+        BackgroundTransparency = 1;
+        BorderColor3 = Library.AccentColor;
+        BorderSizePixel = 2;
+        Size = Instance.Size;
+        Position = Instance.Position;
+        AnchorPoint = Instance.AnchorPoint;
+        Visible = false;
+        ZIndex = 1000;
+        Parent = ScreenGui;
+    });
+
+    Library:AddToRegistry(DragPreview, {
+        BorderColor3 = 'AccentColor';
+    });
+
     Instance.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 then
             local ObjPos = Vector2.new(
@@ -175,8 +191,12 @@ function Library:MakeDraggable(Instance, Cutoff)
                 return;
             end;
 
+            DragPreview.Size = Instance.Size;
+            DragPreview.Position = Instance.Position;
+            DragPreview.Visible = true;
+
             while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                Instance.Position = UDim2.new(
+                DragPreview.Position = UDim2.new(
                     0,
                     Mouse.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
                     0,
@@ -185,6 +205,9 @@ function Library:MakeDraggable(Instance, Cutoff)
 
                 RenderStepped:Wait();
             end;
+
+            Instance.Position = DragPreview.Position;
+            DragPreview.Visible = false;
         end;
     end)
 end;
@@ -2488,10 +2511,6 @@ end);
                     Parent = Scrolling;
                 });
 
-                Library:AddToRegistry(Button, {
-                    BackgroundColor3 = 'MainColor';
-                    BorderColor3 = 'OutlineColor';
-                });
 
                 local ButtonLabel = Library:CreateLabel({
                     Active = false;
@@ -3080,6 +3099,59 @@ function Library:CreateWindow(...)
 
     Library:MakeDraggable(Outer, 25);
 
+    -- Resize handle
+local ResizeHandle = Library:Create('Frame', {
+    BackgroundColor3 = Library.AccentColor;
+    BorderSizePixel = 0;
+    Position = UDim2.new(1, -10, 1, -10);
+    Size = UDim2.new(0, 10, 0, 10);
+    ZIndex = 999;
+    Parent = Outer;
+});
+
+Library:AddToRegistry(ResizeHandle, {
+    BackgroundColor3 = 'AccentColor';
+});
+
+local MinSize = Vector2.new(400, 300);
+local MaxSize = Vector2.new(1000, 800);
+
+ResizeHandle.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local StartSize = Outer.AbsoluteSize;
+        local StartPos = Vector2.new(Mouse.X, Mouse.Y);
+
+        while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+            local Delta = Vector2.new(Mouse.X - StartPos.X, Mouse.Y - StartPos.Y);
+            local NewSize = Vector2.new(
+                math.clamp(StartSize.X + Delta.X, MinSize.X, MaxSize.X),
+                math.clamp(StartSize.Y + Delta.Y, MinSize.Y, MaxSize.Y)
+            );
+
+            Outer.Size = UDim2.fromOffset(NewSize.X, NewSize.Y);
+            MainSectionOuter.Size = UDim2.new(1, -16, 1, -33);
+            
+            -- Update scrolling frame sizes
+            for _, TabFrame in pairs(TabContainer:GetChildren()) do
+                if TabFrame:IsA('Frame') and TabFrame.Name == 'TabFrame' then
+                    for _, Side in pairs(TabFrame:GetChildren()) do
+                        if Side:IsA('ScrollingFrame') then
+                            Side.Size = UDim2.new(Side.Size.X.Scale, Side.Size.X.Offset, 0, NewSize.Y - 93);
+                        end
+                    end
+                end
+            end
+
+            RenderStepped:Wait();
+        end
+    end
+end);
+
+Library:OnHighlight(ResizeHandle, ResizeHandle,
+    { BackgroundColor3 = 'AccentColorDark' },
+    { BackgroundColor3 = 'AccentColor' }
+);
+
     local Inner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
         BorderColor3 = Library.AccentColor;
@@ -3464,13 +3536,17 @@ Library:AddToRegistry(Highlight, {
             function Tabbox:AddTab(Name)
                 local Tab = {};
 
-                local Button = Library:Create('Frame', {
-                    BackgroundColor3 = Library.MainColor;
-                    BorderColor3 = Color3.new(0, 0, 0);
-                    Size = UDim2.new(0.5, 0, 1, 0);
-                    ZIndex = 6;
-                    Parent = TabboxButtons;
-                });
+local Button = Library:Create('Frame', {
+    BackgroundColor3 = Library.MainColor;
+    BorderColor3 = Library.OutlineColor;
+    Size = UDim2.new(0.5, 0, 1, 0);
+    ZIndex = 6;
+    Parent = TabboxButtons;
+});
+
+Library:AddToRegistry(Button, {
+    BorderColor3 = 'OutlineColor';
+});
 
                 Library:AddToRegistry(Button, {
                     BackgroundColor3 = 'MainColor';
