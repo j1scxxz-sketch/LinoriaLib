@@ -665,6 +665,87 @@ do
             Parent = PickerFrameInner;
         });
 
+        -- Minus button
+local MinusButton = Library:Create('TextLabel', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -30, 0, 0);
+    Size = UDim2.new(0, 15, 1, 0);
+    Font = Library.Font;
+    Text = '-';
+    TextColor3 = Library.FontColor;
+    TextSize = 16;
+    TextStrokeTransparency = 0;
+    ZIndex = 10;
+    Parent = SliderInner;
+});
+
+Library:ApplyTextStroke(MinusButton);
+Library:AddToRegistry(MinusButton, {
+    TextColor3 = 'FontColor';
+});
+
+-- Plus button  
+local PlusButton = Library:Create('TextLabel', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -15, 0, 0);
+    Size = UDim2.new(0, 15, 1, 0);
+    Font = Library.Font;
+    Text = '+';
+    TextColor3 = Library.FontColor;
+    TextSize = 16;
+    TextStrokeTransparency = 0;
+    ZIndex = 10;
+    Parent = SliderInner;
+});
+
+Library:ApplyTextStroke(PlusButton);
+Library:AddToRegistry(PlusButton, {
+    TextColor3 = 'FontColor';
+});
+
+-- Make buttons clickable
+local MinusClickFrame = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -30, 0, 0);
+    Size = UDim2.new(0, 15, 1, 0);
+    ZIndex = 11;
+    Parent = SliderInner;
+});
+
+local PlusClickFrame = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -15, 0, 0);
+    Size = UDim2.new(0, 15, 1, 0);
+    ZIndex = 11;
+    Parent = SliderInner;
+});
+
+MinusClickFrame.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local NewValue = math.max(Slider.Min, Slider.Value - 1);
+        Slider:SetValue(NewValue);
+        Library:AttemptSave();
+    end;
+end);
+
+PlusClickFrame.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local NewValue = math.min(Slider.Max, Slider.Value + 1);
+        Slider:SetValue(NewValue);
+        Library:AttemptSave();
+    end;
+end);
+
+Library:OnHighlight(MinusClickFrame, MinusButton,
+    { TextColor3 = 'AccentColor' },
+    { TextColor3 = 'FontColor' }
+);
+
+Library:OnHighlight(PlusClickFrame, PlusButton,
+    { TextColor3 = 'AccentColor' },
+    { TextColor3 = 'FontColor' }
+);
+
 
         local ContextMenu = {}
         do
@@ -3117,7 +3198,7 @@ local WindowLabel = Library:CreateLabel({
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 1, -2);
+    Position = UDim2.new(0, 0, 0, 0);
     Size = UDim2.new(1, 0, 0, 2);
     BackgroundTransparency = 1;
     ZIndex = 10;
@@ -3264,18 +3345,6 @@ end;
                 BackgroundColor3 = 'BackgroundColor';
             });
 
-            local Highlight = Library:Create('Frame', {
-                BackgroundColor3 = Library.AccentColor;
-                BorderSizePixel = 0;
-                Size = UDim2.new(1, 0, 0, 2);
-                ZIndex = 5;
-                Parent = BoxInner;
-            });
-
-            Library:AddToRegistry(Highlight, {
-                BackgroundColor3 = 'AccentColor';
-            });
-
 local GroupboxLabel = Library:CreateLabel({
     Size = UDim2.new(1, 0, 0, 18);
     Position = UDim2.new(0, 0, 0, 2);
@@ -3415,10 +3484,10 @@ local GroupboxLabel = Library:CreateLabel({
                     Parent = Button;
                 });
 
-                local TabboxIndicator = Library:Create('Frame', {
+local TabboxIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 1, -2);
+    Position = UDim2.new(0, 0, 0, 0);
     Size = UDim2.new(1, 0, 0, 2);
     BackgroundTransparency = 1;
     ZIndex = 10;
