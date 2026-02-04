@@ -2673,6 +2673,11 @@ Library:AddToRegistry(ListInner, {
                     BorderColor3 = 'OutlineColor';
                 });
 
+                Library:Create('UICorner', {
+                    CornerRadius = UDim.new(0, 4);
+                    Parent = Button;
+                });
+
 
                 local ButtonLabel = Library:CreateLabel({
                     Active = false;
