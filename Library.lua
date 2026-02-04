@@ -164,17 +164,16 @@ end;
 function Library:MakeDraggable(Instance, Cutoff)
     Instance.Active = true;
 
-    local DragPreview = Library:Create('Frame', {
-        BackgroundTransparency = 1;
-        BorderColor3 = Library.AccentColor;
-        BorderSizePixel = 2;
-        Size = Instance.Size;
-        Position = Instance.Position;
-        AnchorPoint = Instance.AnchorPoint;
-        Visible = false;
-        ZIndex = 1000;
-        Parent = ScreenGui;
-    });
+local DragPreview = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    BorderColor3 = Library.AccentColor;
+    BorderSizePixel = 2;
+    Size = UDim2.new(0, Instance.AbsoluteSize.X, 0, Instance.AbsoluteSize.Y);
+    Position = UDim2.new(0, Instance.AbsolutePosition.X, 0, Instance.AbsolutePosition.Y);
+    Visible = false;
+    ZIndex = 1000;
+    Parent = ScreenGui;
+});
 
     Library:AddToRegistry(DragPreview, {
         BorderColor3 = 'AccentColor';
@@ -191,23 +190,20 @@ function Library:MakeDraggable(Instance, Cutoff)
                 return;
             end;
 
-            DragPreview.Size = Instance.Size;
-            DragPreview.Position = Instance.Position;
-            DragPreview.Visible = true;
+DragPreview.Size = UDim2.new(0, Instance.AbsoluteSize.X, 0, Instance.AbsoluteSize.Y);
+DragPreview.Visible = true;
 
-            while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                DragPreview.Position = UDim2.new(
-                    0,
-                    Mouse.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
-                    0,
-                    Mouse.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
-                );
+while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+    local NewX = Mouse.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X);
+    local NewY = Mouse.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y);
+    
+    DragPreview.Position = UDim2.new(0, NewX, 0, NewY);
 
-                RenderStepped:Wait();
-            end;
+    RenderStepped:Wait();
+end;
 
-            Instance.Position = DragPreview.Position;
-            DragPreview.Visible = false;
+Instance.Position = UDim2.new(0, DragPreview.Position.X.Offset, 0, DragPreview.Position.Y.Offset);
+DragPreview.Visible = false;
         end;
     end)
 end;
@@ -3099,25 +3095,22 @@ function Library:CreateWindow(...)
 
     Library:MakeDraggable(Outer, 25);
 
-    -- Resize handle
-local ResizeHandle = Library:Create('Frame', {
-    BackgroundColor3 = Library.AccentColor;
-    BorderSizePixel = 0;
-    Position = UDim2.new(1, -10, 1, -10);
-    Size = UDim2.new(0, 10, 0, 10);
+ -- Resize functionality (bottom-right 15x15 pixel area)
+local ResizeArea = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -15, 1, -15);
+    Size = UDim2.new(0, 15, 0, 15);
     ZIndex = 999;
     Parent = Outer;
 });
 
-Library:AddToRegistry(ResizeHandle, {
-    BackgroundColor3 = 'AccentColor';
-});
-
 local MinSize = Vector2.new(400, 300);
 local MaxSize = Vector2.new(1000, 800);
+local Resizing = false;
 
-ResizeHandle.InputBegan:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+ResizeArea.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Resizing then
+        Resizing = true;
         local StartSize = Outer.AbsoluteSize;
         local StartPos = Vector2.new(Mouse.X, Mouse.Y);
 
@@ -3129,9 +3122,8 @@ ResizeHandle.InputBegan:Connect(function(Input)
             );
 
             Outer.Size = UDim2.fromOffset(NewSize.X, NewSize.Y);
-            MainSectionOuter.Size = UDim2.new(1, -16, 1, -33);
             
-            -- Update scrolling frame sizes
+            -- Update scrolling frame heights
             for _, TabFrame in pairs(TabContainer:GetChildren()) do
                 if TabFrame:IsA('Frame') and TabFrame.Name == 'TabFrame' then
                     for _, Side in pairs(TabFrame:GetChildren()) do
@@ -3144,6 +3136,8 @@ ResizeHandle.InputBegan:Connect(function(Input)
 
             RenderStepped:Wait();
         end
+        
+        Resizing = false;
     end
 end);
 
