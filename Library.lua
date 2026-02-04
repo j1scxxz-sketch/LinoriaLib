@@ -252,36 +252,25 @@ function Library:AddToolTip(InfoStr, HoverInstance)
     local IsHovering = false
 
     HoverInstance.MouseEnter:Connect(function()
-    if Library:MouseIsOverOpenedFrame() then
-        return
-    end
+        if Library:MouseIsOverOpenedFrame() then
+            return
+        end
 
-    IsHovering = true
+        IsHovering = true
 
-    Tooltip.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 12)
-    Tooltip.Size = UDim2.fromOffset(0, Y + 4)
-    Tooltip.Visible = true
-    
-    TweenService:Create(Tooltip, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(X + 5, Y + 4)
-    }):Play()
-
-    while IsHovering do
-        RunService.Heartbeat:Wait()
         Tooltip.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 12)
-    end
-end)
+        Tooltip.Visible = true
 
-HoverInstance.MouseLeave:Connect(function()
-    IsHovering = false
-    
-    TweenService:Create(Tooltip, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-        Size = UDim2.fromOffset(0, Y + 4)
-    }):Play()
-    
-    task.wait(0.1)
-    Tooltip.Visible = false
-end)
+        while IsHovering do
+            RunService.Heartbeat:Wait()
+            Tooltip.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 12)
+        end
+    end)
+
+    HoverInstance.MouseLeave:Connect(function()
+        IsHovering = false
+        Tooltip.Visible = false
+    end)
 end
 
 function Library:OnHighlight(HighlightInstance, Instance, Properties, PropertiesDefault)
@@ -472,20 +461,10 @@ do
 
 local DisplayFrame = Library:Create('Frame', {
     BackgroundColor3 = Color3.new(0, 0, 0);
-    BorderColor3 = Color3.new(0, 0, 0);
+    BorderColor3 = Library.OutlineColor;
     Size = UDim2.new(0, 28, 0, 14);
     ZIndex = 6;
     Parent = ToggleLabel;
-});
-
-local DisplayInner = Library:Create('Frame', {
-    BackgroundColor3 = ColorPicker.Value;
-    BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
-    BorderMode = Enum.BorderMode.Inset;
-    Position = UDim2.fromOffset(1, 1);
-    Size = UDim2.new(1, -2, 1, -2);
-    ZIndex = 7;
-    Parent = DisplayFrame;
 });
 
 Library:Create('UICorner', {
@@ -522,16 +501,16 @@ Library:Create('UICorner', {
         -- There was some issue which caused RelativeOffset to be way off
         -- Thus the color picker would never show
 
-local PickerFrameOuter = Library:Create('Frame', {
-    Name = 'Color';
-    BackgroundColor3 = Color3.new(1, 1, 1);
-    BorderColor3 = Color3.new(0, 0, 0);
-    Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18),
-    Size = UDim2.fromOffset(230, Info.Transparency and 295 or 275);
-    Visible = false;
-    ZIndex = 15;
-    Parent = ScreenGui,
-});
+        local PickerFrameOuter = Library:Create('Frame', {
+            Name = 'Color';
+            BackgroundColor3 = Color3.new(1, 1, 1);
+            BorderColor3 = Color3.new(0, 0, 0);
+            Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18),
+            Size = UDim2.fromOffset(230, Info.Transparency and 271 or 253);
+            Visible = false;
+            ZIndex = 15;
+            Parent = ScreenGui,
+        });
 
         DisplayFrame:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
             PickerFrameOuter.Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18);
@@ -1133,9 +1112,10 @@ Library:OnHighlight(PlusClickFrame, PlusButton,
             ColorPicker.Value = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib);
             SatVibMap.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
 
-DisplayInner.BackgroundColor3 = ColorPicker.Value;
-DisplayInner.BackgroundTransparency = ColorPicker.Transparency;
-DisplayInner.BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
+Library:Create(DisplayInner, {
+    BackgroundColor3 = ColorPicker.Value;
+    BackgroundTransparency = ColorPicker.Transparency;
+});
 
             if TransparencyBoxInner then
                 TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value;
@@ -2193,32 +2173,9 @@ function Toggle:Display()
         BorderColor3 = targetBorder
     }):Play();
 
-    ToggleIndicator.Visible = Toggle.Value;
-    
-    if Toggle.Value then
-        TweenService:Create(ToggleIndicator, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.fromOffset(9, 9)
-        }):Play();
-    end
-
     Library.RegistryMap[ToggleInner].Properties.BackgroundColor3 = Toggle.Value and 'AccentColor' or 'MainColor';
     Library.RegistryMap[ToggleInner].Properties.BorderColor3 = Toggle.Value and 'AccentColorDark' or 'OutlineColor';
 end;
-
-local ToggleIndicator = Library:Create('Frame', {
-    BackgroundColor3 = Color3.new(1, 1, 1);
-    BorderSizePixel = 0;
-    Position = UDim2.fromOffset(2, 2);
-    Size = UDim2.fromOffset(9, 9);
-    ZIndex = 7;
-    Parent = ToggleInner;
-    Visible = false;
-});
-
-Library:Create('UICorner', {
-    CornerRadius = UDim.new(1, 0);
-    Parent = ToggleIndicator;
-});
 
         function Toggle:OnChanged(Func)
             Toggle.Changed = Func;
@@ -2620,16 +2577,13 @@ end);
         end;
 
         local function RecalculateListSize(YSize)
-    ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X, YSize or (MAX_DROPDOWN_ITEMS * 20 + 2))
-end;
+            ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X, YSize or (MAX_DROPDOWN_ITEMS * 20 + 2))
+        end;
 
-RecalculateListPosition();
-RecalculateListSize();
+        RecalculateListPosition();
+        RecalculateListSize();
 
-DropdownOuter:GetPropertyChangedSignal('AbsolutePosition'):Connect(RecalculateListPosition);
-DropdownOuter:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-    RecalculateListSize();
-end);
+        DropdownOuter:GetPropertyChangedSignal('AbsolutePosition'):Connect(RecalculateListPosition);
 
         local ListInner = Library:Create('Frame', {
             BackgroundColor3 = Library.MainColor;
@@ -2640,46 +2594,6 @@ end);
             ZIndex = 21;
             Parent = ListOuter;
         });
-
-        -- Search bar for dropdowns (only show if more than 8 items)
-local SearchBox = nil
-if #Dropdown.Values > 8 then
-    local SearchOuter = Library:Create('Frame', {
-        BackgroundColor3 = Library.MainColor;
-        BorderColor3 = Library.OutlineColor;
-        Position = UDim2.fromOffset(1, 1);
-        Size = UDim2.new(1, -2, 0, 20);
-        ZIndex = 22;
-        Parent = ListInner;
-    });
-
-    Library:AddToRegistry(SearchOuter, {
-        BackgroundColor3 = 'MainColor';
-        BorderColor3 = 'OutlineColor';
-    });
-
-    SearchBox = Library:Create('TextBox', {
-        BackgroundTransparency = 1;
-        Position = UDim2.fromOffset(5, 0);
-        Size = UDim2.new(1, -10, 1, 0);
-        Font = Library.Font;
-        PlaceholderColor3 = Color3.fromRGB(190, 190, 190);
-        PlaceholderText = 'Search...';
-        Text = '';
-        TextColor3 = Library.FontColor;
-        TextSize = 14;
-        TextStrokeTransparency = 0;
-        TextXAlignment = Enum.TextXAlignment.Left;
-        ZIndex = 23;
-        Parent = SearchOuter;
-    });
-
-    Library:ApplyTextStroke(SearchBox);
-    Library:AddToRegistry(SearchBox, { TextColor3 = 'FontColor' });
-
-    Scrolling.Position = UDim2.fromOffset(0, 22);
-    Scrolling.Size = UDim2.new(1, 0, 1, -22);
-end
 
         Library:AddToRegistry(ListInner, {
             BackgroundColor3 = 'MainColor';
@@ -2757,23 +2671,10 @@ end
 
             local Count = 0;
 
-for Idx, Value in next, Values do
-    local Table = {};
-    
-    -- Filter based on search
-    if SearchBox and SearchBox.Text ~= '' then
-        if not string.find(string.lower(Value), string.lower(SearchBox.Text)) then
-            continue
-        end
-    end
+            for Idx, Value in next, Values do
+                local Table = {};
 
-    Count = Count + 1;
-
-    if SearchBox then
-    SearchBox:GetPropertyChangedSignal('Text'):Connect(function()
-        Dropdown:BuildDropdownList()
-    end)
-end
+                Count = Count + 1;
 
                 local Button = Library:Create('Frame', {
                     BackgroundColor3 = Library.MainColor;
@@ -3242,27 +3143,6 @@ function Library:SetWatermark(Text)
     Library.WatermarkText.Text = Text;
 end;
 
-Library.NotificationQueue = {}
-Library.ActiveNotifications = 0
-Library.MaxNotifications = 5
-
-function Library:ProcessNotificationQueue()
-    if Library.ActiveNotifications >= Library.MaxNotifications then
-        return
-    end
-    
-    if #Library.NotificationQueue > 0 then
-        local nextNotif = table.remove(Library.NotificationQueue, 1)
-        Library.ActiveNotifications = Library.ActiveNotifications + 1
-        
-        task.spawn(function()
-            Library:ShowNotification(nextNotif.Text, nextNotif.Time)
-        end)
-    end
-end
-
-function Library:ShowNotification(Text, Time)
-
 function Library:Notify(Text, Time)
     local XSize, YSize = Library:GetTextBounds(Text, Library.Font, 14);
 
@@ -3500,15 +3380,14 @@ local WindowLabel = Library:CreateLabel({
     Parent = Inner;
 });
 
+-- Animated Title System
 local AnimatedTitle = {
-    Enabled = true,
-    Speed = 0.08,
+    Enabled = false,
+    Speed = 0.05,
     FullText = Config.Title or '',
     CurrentIndex = 0,
-    Direction = 1,
+    Direction = 1, -- 1 for typing, -1 for deleting
     Connection = nil,
-    PauseTime = 0,
-    MaxPauseTime = 2.5,
 }
 
 function AnimatedTitle:Update()
@@ -3523,42 +3402,33 @@ function AnimatedTitle:Update()
 
     if self.Connection then return end
 
-    local lastUpdate = tick()
-self.Connection = Library:GiveSignal(RunService.RenderStepped:Connect(function()
-    if not self.Enabled then
-        AnimatedTitle:Update()
-        return
-    end
-
-    local now = tick()
-    if now - lastUpdate < self.Speed then
-        return
-    end
-    lastUpdate = now
-
-    if self.PauseTime > 0 then
-        self.PauseTime = self.PauseTime - (now - lastUpdate)
-        return
-    end
-
-    if self.Direction == 1 then
-        self.CurrentIndex = self.CurrentIndex + 1
-        if self.CurrentIndex >= #self.FullText then
-            self.CurrentIndex = #self.FullText
-            self.PauseTime = self.MaxPauseTime
-            self.Direction = -1
+    self.Connection = Library:GiveSignal(RunService.RenderStepped:Connect(function()
+        if not self.Enabled then
+            AnimatedTitle:Update()
+            return
         end
-    else
-        self.CurrentIndex = self.CurrentIndex - 1
-        if self.CurrentIndex <= 0 then
-            self.CurrentIndex = 0
-            self.PauseTime = 1.5
-            self.Direction = 1
-        end
-    end
 
-    WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex) .. (self.Direction == 1 and "|" or "")
-end))
+        task.wait(self.Speed)
+
+        if self.Direction == 1 then
+            self.CurrentIndex = self.CurrentIndex + 1
+            if self.CurrentIndex >= #self.FullText then
+                self.CurrentIndex = #self.FullText
+                task.wait(1) -- Pause at full text
+                self.Direction = -1
+            end
+        else
+            self.CurrentIndex = self.CurrentIndex - 1
+            if self.CurrentIndex <= 0 then
+                self.CurrentIndex = 0
+                task.wait(0.5) -- Pause at empty
+                self.Direction = 1
+            end
+        end
+
+        WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex)
+    end))
+end
 
 Window.AnimatedTitle = AnimatedTitle
 AnimatedTitle:Update()
