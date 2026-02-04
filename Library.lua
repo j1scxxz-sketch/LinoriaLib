@@ -2262,10 +2262,14 @@ local Slider = {
             BorderColor3 = 'AccentColorDark';
         });
 
-        local FillGradient = Library:Create('UIGradient', {
+local FillGradient = Library:Create('UIGradient', {
             Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0, Library.AccentColor),
-                ColorSequenceKeypoint.new(1, Library:GetDarkerColor(Library.AccentColor))
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(
+                    math.max(0, Library.AccentColor.R * 255 - 15),
+                    math.max(0, Library.AccentColor.G * 255 - 15),
+                    math.max(0, Library.AccentColor.B * 255 - 15)
+                ))
             });
             Rotation = 0;
             Parent = Fill;
@@ -2275,7 +2279,11 @@ local Slider = {
             Color = function()
                 return ColorSequence.new({
                     ColorSequenceKeypoint.new(0, Library.AccentColor),
-                    ColorSequenceKeypoint.new(1, Library:GetDarkerColor(Library.AccentColor))
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(
+                        math.max(0, Library.AccentColor.R * 255 - 15),
+                        math.max(0, Library.AccentColor.G * 255 - 15),
+                        math.max(0, Library.AccentColor.B * 255 - 15)
+                    ))
                 });
             end
         });
@@ -2535,12 +2543,17 @@ end);
 
         local MAX_DROPDOWN_ITEMS = 8;
 
-        local ListOuter = Library:Create('Frame', {
-            BackgroundColor3 = Color3.new(0, 0, 0);
-            BorderColor3 = Color3.new(0, 0, 0);
+local ListOuter = Library:Create('Frame', {
+            BackgroundColor3 = Library.BackgroundColor;
+            BorderColor3 = Library.OutlineColor;
             ZIndex = 20;
             Visible = false;
             Parent = ScreenGui;
+        });
+
+        Library:AddToRegistry(ListOuter, {
+            BackgroundColor3 = 'BackgroundColor';
+            BorderColor3 = 'OutlineColor';
         });
 
 local function RecalculateListPosition()
@@ -2560,11 +2573,10 @@ DropdownOuter:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
     RecalculateListSize();
 end);
 
-        local ListInner = Library:Create('Frame', {
-            BackgroundColor3 = Library.MainColor;
+local ListInner = Library:Create('Frame', {
+            BackgroundColor3 = Library.BackgroundColor;
             BorderColor3 = Library.OutlineColor;
             BorderMode = Enum.BorderMode.Inset;
-            BorderSizePixel = 0;
             Size = UDim2.new(1, 0, 1, 0);
             ZIndex = 21;
             Parent = ListOuter;
