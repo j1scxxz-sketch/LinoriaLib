@@ -2673,7 +2673,7 @@ Library:AddToRegistry(ListInner, {
                     BorderColor3 = 'OutlineColor';
                 });
 
-                Library:Create('UICorner', {
+Library:Create('UICorner', {
                     CornerRadius = UDim.new(0, 4);
                     Parent = Button;
                 });
@@ -3669,6 +3669,11 @@ end;
                 BackgroundColor3 = 'BackgroundColor';
                 BorderColor3 = 'OutlineColor';
             });
+
+            Library:Create('UICorner', {
+            CornerRadius = UDim.new(0, 4);
+            Parent = BoxOuter;
+        });
 
             Library:Create('UICorner', {
             CornerRadius = UDim.new(0, 4);
