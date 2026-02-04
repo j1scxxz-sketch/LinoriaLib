@@ -3825,10 +3825,10 @@ local TabboxButtons = Library:Create('Frame', {
             Parent = BoxInner;
         });
 
-        Library:Create('UIListLayout', {
-            Padding = UDim.new(0, 0);
+Library:Create('UIListLayout', {
+            Padding = UDim.new(0, 2);
             FillDirection = Enum.FillDirection.Horizontal;
-            HorizontalAlignment = Enum.HorizontalAlignment.Left;
+            HorizontalAlignment = Enum.HorizontalAlignment.Center;
             SortOrder = Enum.SortOrder.LayoutOrder;
             Parent = TabboxButtons;
         });
