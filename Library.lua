@@ -807,54 +807,7 @@ CreateRGBSlider('B', 40, 'B');
             Parent = PickerFrameInner;
         });
 
-        -- Color Presets
-local PresetContainer = Library:Create('Frame', {
-    BackgroundTransparency = 1;
-    Position = UDim2.fromOffset(4, Info.Transparency and 268 or 250);
-    Size = UDim2.new(1, -8, 0, 20);
-    ZIndex = 18;
-    Parent = PickerFrameInner;
-});
-
-Library:Create('UIGridLayout', {
-    CellPadding = UDim2.fromOffset(2, 2);
-    CellSize = UDim2.fromOffset(18, 18);
-    FillDirection = Enum.FillDirection.Horizontal;
-    Parent = PresetContainer;
-});
-
-local DefaultPresets = {
-    Color3.fromRGB(255, 0, 0),
-    Color3.fromRGB(255, 127, 0),
-    Color3.fromRGB(255, 255, 0),
-    Color3.fromRGB(0, 255, 0),
-    Color3.fromRGB(0, 0, 255),
-    Color3.fromRGB(75, 0, 130),
-    Color3.fromRGB(148, 0, 211),
-    Color3.fromRGB(255, 255, 255),
-    Color3.fromRGB(128, 128, 128),
-    Color3.fromRGB(0, 0, 0),
-};
-
-for _, PresetColor in ipairs(DefaultPresets) do
-    local PresetButton = Library:Create('Frame', {
-        BackgroundColor3 = PresetColor;
-        BorderColor3 = Color3.new(0, 0, 0);
-        ZIndex = 19;
-        Parent = PresetContainer;
-    });
-
-    PresetButton.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-            ColorPicker:SetValueRGB(PresetColor);
-        end;
-    end);
-
-    Library:OnHighlight(PresetButton, PresetButton,
-        { BorderColor3 = 'AccentColor' },
-        { BorderColor3 = 'Black' }
-    );
-end
+        
 
         -- Minus button
 local MinusButton = Library:Create('TextLabel', {
@@ -2307,6 +2260,24 @@ local Slider = {
         Library:AddToRegistry(Fill, {
             BackgroundColor3 = 'AccentColor';
             BorderColor3 = 'AccentColorDark';
+        });
+
+        local FillGradient = Library:Create('UIGradient', {
+            Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Library.AccentColor),
+                ColorSequenceKeypoint.new(1, Library:GetDarkerColor(Library.AccentColor))
+            });
+            Rotation = 0;
+            Parent = Fill;
+        });
+
+        Library:AddToRegistry(FillGradient, {
+            Color = function()
+                return ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Library.AccentColor),
+                    ColorSequenceKeypoint.new(1, Library:GetDarkerColor(Library.AccentColor))
+                });
+            end
         });
 
         local HideBorderRight = Library:Create('Frame', {
