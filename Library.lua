@@ -3384,64 +3384,66 @@ local WindowLabel = Library:CreateLabel({
     Parent = Inner;
 });
 
--- Animated Title System
 local AnimatedTitle = {
     Enabled = true,
     Speed = 0.08,
     FullText = Config.Title or '',
     CurrentIndex = 0,
-    Direction = 1, -- 1 for typing, -1 for deleting
-    Connection = nil,
+    Direction = 1,
+    PauseTime = 0,
+    LastUpdate = 0,
 }
 
-function AnimatedTitle:Update()
+function AnimatedTitle:Start()
     if not self.Enabled then
         WindowLabel.Text = self.FullText
-        if self.Connection then
-            self.Connection:Disconnect()
-            self.Connection = nil
-        end
         return
     end
 
-    if self.Connection then return end
-
-    local LastUpdate = tick()
-    
-    self.Connection = Library:GiveSignal(RunService.Heartbeat:Connect(function()
-        if not self.Enabled then
-            AnimatedTitle:Update()
-            return
-        end
-
-        local Now = tick()
-        if Now - LastUpdate < self.Speed then
-            return
-        end
-        LastUpdate = Now
-
-        if self.Direction == 1 then
-            self.CurrentIndex = self.CurrentIndex + 1
-            if self.CurrentIndex >= #self.FullText then
-                self.CurrentIndex = #self.FullText
-                LastUpdate = Now + 2 -- Pause at full text for 2 seconds
-                self.Direction = -1
+    task.spawn(function()
+        while self.Enabled and WindowLabel.Parent do
+            local Now = tick()
+            
+            -- Handle pausing
+            if self.PauseTime > 0 then
+                if Now - self.LastUpdate >= self.PauseTime then
+                    self.PauseTime = 0
+                    self.LastUpdate = Now
+                end
+                task.wait(0.1)
+            else
+                -- Handle typing/deleting
+                if Now - self.LastUpdate >= self.Speed then
+                    if self.Direction == 1 then
+                        -- Typing
+                        self.CurrentIndex = self.CurrentIndex + 1
+                        if self.CurrentIndex >= #self.FullText then
+                            self.CurrentIndex = #self.FullText
+                            self.PauseTime = 2 -- Pause for 2 seconds at full text
+                            self.Direction = -1
+                        end
+                    else
+                        -- Deleting
+                        self.CurrentIndex = self.CurrentIndex - 1
+                        if self.CurrentIndex <= 0 then
+                            self.CurrentIndex = 0
+                            self.PauseTime = 1 -- Pause for 1 second when empty
+                            self.Direction = 1
+                        end
+                    end
+                    
+                    WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex)
+                    self.LastUpdate = Now
+                end
+                
+                task.wait()
             end
-        else
-            self.CurrentIndex = self.CurrentIndex - 1
-            if self.CurrentIndex <= 0 then
-                self.CurrentIndex = 0
-                LastUpdate = Now + 1 -- Pause at empty for 1 second
-                self.Direction = 1
-            end
         end
-
-        WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex) .. (self.Direction == 1 and self.CurrentIndex < #self.FullText and "|" or "")
-    end))
+    end)
 end
 
 Window.AnimatedTitle = AnimatedTitle
-AnimatedTitle:Update()
+AnimatedTitle:Start()
 
     local MainSectionOuter = Library:Create('Frame', {
         BackgroundColor3 = Library.BackgroundColor;
