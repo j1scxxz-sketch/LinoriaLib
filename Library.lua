@@ -38,6 +38,7 @@ local Library = {
 
     Black = Color3.new(0, 0, 0);
     Font = Enum.Font.Code,
+    CustomFont = nil,
 
     OpenedFrames = {};
     DependencyBoxes = {};
@@ -45,6 +46,27 @@ local Library = {
     Signals = {};
     ScreenGui = ScreenGui;
 };
+
+-- Load custom font
+task.spawn(function()
+    local success, font = pcall(function()
+        return Font.new("rbxasset://fonts/families/Zekton.json")
+    end)
+    
+    if not success then
+        -- Try loading from URL
+        success, font = pcall(function()
+            local fontData = game:HttpGet("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
+            -- Note: Direct TTF loading isn't supported, you'll need to use getcustomasset or similar
+            return Font.new(getcustomasset and getcustomasset("zekton_rg.ttf") or "rbxasset://fonts/families/Zekton.json")
+        end)
+    end
+    
+    if success and font then
+        Library.CustomFont = font
+        Library.Font = font
+    end
+end)
 
 local RainbowStep = 0
 local Hue = 0
@@ -3244,13 +3266,13 @@ local WindowLabel = Library:CreateLabel({
         BackgroundColor3 = 'BackgroundColor';
     });
 
-    local TabArea = Library:Create('Frame', {
-        BackgroundTransparency = 1;
-        Position = UDim2.new(0, 8, 0, 8);
-        Size = UDim2.new(1, -16, 0, 21);
-        ZIndex = 1;
-        Parent = MainSectionInner;
-    });
+local TabArea = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(0, 8, 0, 4);
+    Size = UDim2.new(1, -16, 0, 21);
+    ZIndex = 1;
+    Parent = MainSectionInner;
+});
 
     local TabListLayout = Library:Create('UIListLayout', {
         Padding = UDim.new(0, Config.TabPadding);
