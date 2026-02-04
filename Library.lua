@@ -3288,6 +3288,24 @@ function Library:CreateWindow(...)
 
     Library:MakeDraggable(Outer, 25);
 
+    local Glow = Library:Create('ImageLabel', {
+        AnchorPoint = Vector2.new(0.5, 0.5);
+        BackgroundTransparency = 1;
+        Image = 'http://www.roblox.com/asset/?id=18245826428';
+        ImageColor3 = Library.AccentColor;
+        ImageTransparency = 0.5;
+        Position = UDim2.new(0.5, 0, 0.5, 0);
+        Size = UDim2.new(1, 40, 1, 40);
+        ScaleType = Enum.ScaleType.Slice;
+        SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79));
+        ZIndex = 0;
+        Parent = Outer;
+    });
+
+    Library:AddToRegistry(Glow, {
+        ImageColor3 = 'AccentColor';
+    });
+
     -- Resize areas
 local MinSize = Vector2.new(400, 300);
 local MaxSize = Vector2.new(1000, 800);
