@@ -3795,20 +3795,21 @@ Library:AddToRegistry(Highlight, {
     BackgroundColor3 = 'AccentColor';
 });
 
-            local TabboxButtons = Library:Create('Frame', {
-                BackgroundTransparency = 1;
-                Position = UDim2.new(0, 0, 0, 1);
-                Size = UDim2.new(1, 0, 0, 18);
-                ZIndex = 5;
-                Parent = BoxInner;
-            });
+local TabboxButtons = Library:Create('Frame', {
+            BackgroundTransparency = 1;
+            Position = UDim2.new(0, 4, 0, 1);
+            Size = UDim2.new(1, -8, 0, 18);
+            ZIndex = 5;
+            Parent = BoxInner;
+        });
 
-            Library:Create('UIListLayout', {
-                FillDirection = Enum.FillDirection.Horizontal;
-                HorizontalAlignment = Enum.HorizontalAlignment.Left;
-                SortOrder = Enum.SortOrder.LayoutOrder;
-                Parent = TabboxButtons;
-            });
+        Library:Create('UIListLayout', {
+            Padding = UDim.new(0, 2);
+            FillDirection = Enum.FillDirection.Horizontal;
+            HorizontalAlignment = Enum.HorizontalAlignment.Left;
+            SortOrder = Enum.SortOrder.LayoutOrder;
+            Parent = TabboxButtons;
+        });
 
             function Tabbox:AddTab(Name)
                 local Tab = {};
