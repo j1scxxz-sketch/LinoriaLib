@@ -37,7 +37,7 @@ local Library = {
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
-    Font = Font.fromEnum(Enum.Font.Code),
+    Font = Enum.Font.Code,
 
     OpenedFrames = {};
     DependencyBoxes = {};
@@ -45,51 +45,6 @@ local Library = {
     Signals = {};
     ScreenGui = ScreenGui;
 };
-
--- Load custom font (same method as ESP)
-task.spawn(function()
-    local FolderLocation = "UI"
-    
-    if not isfolder(FolderLocation) then
-        makefolder(FolderLocation)
-    end
-    
-    if not isfolder(FolderLocation .. "/Fonts") then
-        makefolder(FolderLocation .. "/Fonts")
-    end
-    
-    local FontName = "Zekton"
-    local FontLink = "https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"
-    
-    if not isfile(FolderLocation .. "/Fonts/" .. FontName .. ".ttf") then
-        writefile(FolderLocation .. "/Fonts/" .. FontName .. ".ttf", game:HttpGet(FontLink))
-    end
-    
-    if not isfile(FolderLocation .. "/Fonts/" .. FontName .. ".font") then
-        local Config = {
-            name = FontName,
-            faces = {{
-                name = "Regular",
-                weight = 400,
-                style = "normal",
-                assetId = getcustomasset(FolderLocation .. "/Fonts/" .. FontName .. ".ttf")
-            }}
-        }
-        
-        writefile(FolderLocation .. "/Fonts/" .. FontName .. ".font", game:GetService("HttpService"):JSONEncode(Config))
-    end
-    
-    local success, result = pcall(function()
-        return Font.new(getcustomasset(FolderLocation .. "/Fonts/" .. FontName .. ".font"))
-    end)
-    
-    if success and result then
-        Library.Font = result
-        print("[UI] Custom font loaded successfully")
-    else
-        warn("[UI] Failed to load custom font:", result)
-    end
-end)
 
 local RainbowStep = 0
 local Hue = 0
