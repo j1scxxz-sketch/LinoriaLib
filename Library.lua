@@ -459,14 +459,32 @@ do
 
         ColorPicker:SetHSVFromRGB(ColorPicker.Value);
 
-        local DisplayFrame = Library:Create('Frame', {
-            BackgroundColor3 = ColorPicker.Value;
-            BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
-            BorderMode = Enum.BorderMode.Inset;
-            Size = UDim2.new(0, 28, 0, 14);
-            ZIndex = 6;
-            Parent = ToggleLabel;
-        });
+local DisplayFrame = Library:Create('Frame', {
+    BackgroundColor3 = Color3.new(0, 0, 0);
+    BorderColor3 = Library.OutlineColor;
+    Size = UDim2.new(0, 28, 0, 14);
+    ZIndex = 6;
+    Parent = ToggleLabel;
+});
+
+Library:Create('UICorner', {
+    CornerRadius = UDim.new(0, 3);
+    Parent = DisplayFrame;
+});
+
+local DisplayInner = Library:Create('Frame', {
+    BackgroundColor3 = ColorPicker.Value;
+    BorderSizePixel = 0;
+    Position = UDim2.fromOffset(1, 1);
+    Size = UDim2.new(1, -2, 1, -2);
+    ZIndex = 7;
+    Parent = DisplayFrame;
+});
+
+Library:Create('UICorner', {
+    CornerRadius = UDim.new(0, 2);
+    Parent = DisplayInner;
+});
 
         -- Transparency image taken from https://github.com/matas3535/SplixPrivateDrawingLibrary/blob/main/Library.lua cus i'm lazy
         local CheckerFrame = Library:Create('ImageLabel', {
@@ -483,16 +501,16 @@ do
         -- There was some issue which caused RelativeOffset to be way off
         -- Thus the color picker would never show
 
-        local PickerFrameOuter = Library:Create('Frame', {
-            Name = 'Color';
-            BackgroundColor3 = Color3.new(1, 1, 1);
-            BorderColor3 = Color3.new(0, 0, 0);
-            Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18),
-            Size = UDim2.fromOffset(230, Info.Transparency and 271 or 253);
-            Visible = false;
-            ZIndex = 15;
-            Parent = ScreenGui,
-        });
+local PickerFrameOuter = Library:Create('Frame', {
+    Name = 'Color';
+    BackgroundColor3 = Color3.new(1, 1, 1);
+    BorderColor3 = Color3.new(0, 0, 0);
+    Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18),
+    Size = UDim2.fromOffset(230, Info.Transparency and 295 or 275);
+    Visible = false;
+    ZIndex = 15;
+    Parent = ScreenGui,
+});
 
         DisplayFrame:GetPropertyChangedSignal('AbsolutePosition'):Connect(function()
             PickerFrameOuter.Position = UDim2.fromOffset(DisplayFrame.AbsolutePosition.X, DisplayFrame.AbsolutePosition.Y + 18);
@@ -640,6 +658,104 @@ do
             TextColor3 = Library.FontColor
         });
 
+        -- RGB Sliders
+local SliderContainer = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.fromOffset(4, Info.Transparency and 228 or 210);
+    Size = UDim2.new(1, -8, 0, 60);
+    ZIndex = 18;
+    Visible = false; -- Toggle this for advanced mode
+    Parent = PickerFrameInner;
+});
+
+local function CreateRGBSlider(Name, YPos, ColorChannel)
+    local SliderLabel = Library:CreateLabel({
+        Position = UDim2.fromOffset(0, YPos);
+        Size = UDim2.new(0, 15, 0, 15);
+        Text = Name;
+        TextSize = 12;
+        ZIndex = 19;
+        Parent = SliderContainer;
+    });
+
+    local SliderOuter = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BorderColor3 = Color3.new(0, 0, 0);
+        Position = UDim2.fromOffset(20, YPos);
+        Size = UDim2.new(1, -50, 0, 15);
+        ZIndex = 19;
+        Parent = SliderContainer;
+    });
+
+    local SliderInner = Library:Create('Frame', {
+        BackgroundColor3 = Library.MainColor;
+        BorderColor3 = Library.OutlineColor;
+        BorderMode = Enum.BorderMode.Inset;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 20;
+        Parent = SliderOuter;
+    });
+
+    Library:AddToRegistry(SliderInner, {
+        BackgroundColor3 = 'MainColor';
+        BorderColor3 = 'OutlineColor';
+    });
+
+    local SliderFill = Library:Create('Frame', {
+        BackgroundColor3 = Library.AccentColor;
+        BorderSizePixel = 0;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 21;
+        Parent = SliderInner;
+    });
+
+    Library:AddToRegistry(SliderFill, {
+        BackgroundColor3 = 'AccentColor';
+    });
+
+    local ValueLabel = Library:CreateLabel({
+        Position = UDim2.new(1, 5, 0, 0);
+        Size = UDim2.new(0, 25, 0, 15);
+        Text = '255';
+        TextSize = 12;
+        ZIndex = 19;
+        Parent = SliderContainer;
+    });
+
+    SliderInner.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+                local MinX = SliderInner.AbsolutePosition.X;
+                local MaxX = MinX + SliderInner.AbsoluteSize.X;
+                local MouseX = math.clamp(Mouse.X, MinX, MaxX);
+                local Value = math.floor(((MouseX - MinX) / (MaxX - MinX)) * 255);
+                
+                local R, G, B = math.floor(ColorPicker.Value.R * 255), 
+                                math.floor(ColorPicker.Value.G * 255), 
+                                math.floor(ColorPicker.Value.B * 255);
+                
+                if ColorChannel == 'R' then R = Value
+                elseif ColorChannel == 'G' then G = Value
+                else B = Value end
+                
+                ColorPicker:SetHSVFromRGB(Color3.fromRGB(R, G, B));
+                ColorPicker:Display();
+                
+                SliderFill.Size = UDim2.new(Value / 255, 0, 1, 0);
+                ValueLabel.Text = tostring(Value);
+                
+                RenderStepped:Wait();
+            end;
+        end;
+    end);
+
+    return SliderOuter, ValueLabel;
+end
+
+CreateRGBSlider('R', 0, 'R');
+CreateRGBSlider('G', 20, 'G');
+CreateRGBSlider('B', 40, 'B');
+
         local TransparencyBoxOuter, TransparencyBoxInner, TransparencyCursor;
         
         if Info.Transparency then 
@@ -690,6 +806,55 @@ do
             ZIndex = 16;
             Parent = PickerFrameInner;
         });
+
+        -- Color Presets
+local PresetContainer = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.fromOffset(4, Info.Transparency and 268 or 250);
+    Size = UDim2.new(1, -8, 0, 20);
+    ZIndex = 18;
+    Parent = PickerFrameInner;
+});
+
+Library:Create('UIGridLayout', {
+    CellPadding = UDim2.fromOffset(2, 2);
+    CellSize = UDim2.fromOffset(18, 18);
+    FillDirection = Enum.FillDirection.Horizontal;
+    Parent = PresetContainer;
+});
+
+local DefaultPresets = {
+    Color3.fromRGB(255, 0, 0),
+    Color3.fromRGB(255, 127, 0),
+    Color3.fromRGB(255, 255, 0),
+    Color3.fromRGB(0, 255, 0),
+    Color3.fromRGB(0, 0, 255),
+    Color3.fromRGB(75, 0, 130),
+    Color3.fromRGB(148, 0, 211),
+    Color3.fromRGB(255, 255, 255),
+    Color3.fromRGB(128, 128, 128),
+    Color3.fromRGB(0, 0, 0),
+};
+
+for _, PresetColor in ipairs(DefaultPresets) do
+    local PresetButton = Library:Create('Frame', {
+        BackgroundColor3 = PresetColor;
+        BorderColor3 = Color3.new(0, 0, 0);
+        ZIndex = 19;
+        Parent = PresetContainer;
+    });
+
+    PresetButton.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            ColorPicker:SetValueRGB(PresetColor);
+        end;
+    end);
+
+    Library:OnHighlight(PresetButton, PresetButton,
+        { BorderColor3 = 'AccentColor' },
+        { BorderColor3 = 'Black' }
+    );
+end
 
         -- Minus button
 local MinusButton = Library:Create('TextLabel', {
@@ -947,11 +1112,10 @@ Library:OnHighlight(PlusClickFrame, PlusButton,
             ColorPicker.Value = Color3.fromHSV(ColorPicker.Hue, ColorPicker.Sat, ColorPicker.Vib);
             SatVibMap.BackgroundColor3 = Color3.fromHSV(ColorPicker.Hue, 1, 1);
 
-            Library:Create(DisplayFrame, {
-                BackgroundColor3 = ColorPicker.Value;
-                BackgroundTransparency = ColorPicker.Transparency;
-                BorderColor3 = Library:GetDarkerColor(ColorPicker.Value);
-            });
+Library:Create(DisplayInner, {
+    BackgroundColor3 = ColorPicker.Value;
+    BackgroundTransparency = ColorPicker.Transparency;
+});
 
             if TransparencyBoxInner then
                 TransparencyBoxInner.BackgroundColor3 = ColorPicker.Value;
