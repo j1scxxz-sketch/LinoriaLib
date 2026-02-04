@@ -1797,7 +1797,6 @@ do
             return self
         end
 
-
 function Button:AddButton(...)
     local SubButton = {}
 
@@ -1808,8 +1807,13 @@ function Button:AddButton(...)
     SubButton.Outer, SubButton.Inner, SubButton.Label = CreateBaseButton(SubButton)
 
     SubButton.Outer.Position = UDim2.new(1, 3, 0, 0)
-    SubButton.Outer.Size = UDim2.new(0.5, -1, 0, 20)
+    SubButton.Outer.Size = UDim2.new(1, -1, 1, 0)
     SubButton.Outer.Parent = self.Outer
+    
+    -- Update sub button size when main button resizes
+    self.Outer:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+        SubButton.Outer.Size = UDim2.new(1, -1, 1, 0)
+    end)
 
             function SubButton:AddTooltip(tooltip)
                 if type(tooltip) == 'string' then
