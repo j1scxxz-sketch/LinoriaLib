@@ -2673,6 +2673,11 @@ Library:AddToRegistry(ListInner, {
                     Parent = Scrolling;
                 });
 
+                Library:AddToRegistry(Button, {
+                    BackgroundColor3 = 'MainColor';
+                    BorderColor3 = 'OutlineColor';
+                });
+
 
                 local ButtonLabel = Library:CreateLabel({
                     Active = false;
