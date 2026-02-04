@@ -2459,13 +2459,13 @@ function Funcs:AddMultiSlider(Idx, Info)
         assert(Info.Max, 'AddMultiSlider: Missing maximum value.');
         assert(Info.Rounding, 'AddMultiSlider: Missing rounding value.');
 
-        local MultiSlider = {
+local MultiSlider = {
             MinValue = Info.Default.Min or Info.Min;
             MaxValue = Info.Default.Max or Info.Max;
             Min = Info.Min;
             Max = Info.Max;
             Rounding = Info.Rounding;
-            MaxSize = 115; -- Half the normal size since we have 2 sliders
+            MaxSize = 0;
             Type = 'MultiSlider';
             Callback = Info.Callback or function(Values) end;
         };
@@ -2518,15 +2518,10 @@ function Funcs:AddMultiSlider(Idx, Info)
                 Parent = SliderOuter;
             });
 
-            Library:AddToRegistry(SliderInner, {
+Library:AddToRegistry(SliderInner, {
                 BackgroundColor3 = 'MainColor';
                 BorderColor3 = 'OutlineColor';
             });
-
-            SliderInner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-                MultiSlider.MaxSize = SliderInner.AbsoluteSize.X;
-                MultiSlider:Display();
-            end);
 
             local Fill = Library:Create('Frame', {
                 BackgroundColor3 = Library.AccentColor;
@@ -2602,8 +2597,19 @@ function Funcs:AddMultiSlider(Idx, Info)
             };
         end
 
-        local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
+local MinSlider = CreateSlider(true, UDim2.new(0, 0, 0, 0));
         local MaxSlider = CreateSlider(false, UDim2.new(0.5, 2, 0, 0));
+
+        -- Update MaxSize when sliders are resized
+        MinSlider.Inner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+            MultiSlider.MaxSize = MinSlider.Inner.AbsoluteSize.X;
+            MultiSlider:Display();
+        end);
+
+        MaxSlider.Inner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+            MultiSlider.MaxSize = MaxSlider.Inner.AbsoluteSize.X;
+            MultiSlider:Display();
+        end);
 
         function MultiSlider:Display()
             local Suffix = Info.Suffix or '';
