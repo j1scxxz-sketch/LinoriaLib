@@ -2452,6 +2452,292 @@ end);
         return Slider;
     end;
 
+    function Funcs:AddMultiSlider(Idx, Info)
+        assert(Info.Default, 'AddMultiSlider: Missing default value (table with Min and Max).');
+        assert(Info.Text, 'AddMultiSlider: Missing slider text.');
+        assert(Info.Min, 'AddMultiSlider: Missing minimum value.');
+        assert(Info.Max, 'AddMultiSlider: Missing maximum value.');
+        assert(Info.Rounding, 'AddMultiSlider: Missing rounding value.');
+
+        local MultiSlider = {
+            MinValue = Info.Default.Min or Info.Min;
+            MaxValue = Info.Default.Max or Info.Max;
+            Min = Info.Min;
+            Max = Info.Max;
+            Rounding = Info.Rounding;
+            MaxSize = 232;
+            Type = 'MultiSlider';
+            Callback = Info.Callback or function(Values) end;
+        };
+
+        local Groupbox = self;
+        local Container = Groupbox.Container;
+
+        if not Info.Compact then
+            Library:CreateLabel({
+                Size = UDim2.new(1, 0, 0, 10);
+                TextSize = 14;
+                Text = Info.Text;
+                TextXAlignment = Enum.TextXAlignment.Left;
+                TextYAlignment = Enum.TextYAlignment.Bottom;
+                ZIndex = 5;
+                Parent = Container;
+            });
+
+            Groupbox:AddBlank(3);
+        end
+
+        -- Container for both sliders
+        local SliderContainer = Library:Create('Frame', {
+            BackgroundTransparency = 1;
+            Size = UDim2.new(1, -4, 0, 13 * 2 + 3);
+            ZIndex = 5;
+            Parent = Container;
+        });
+
+        local function CreateSlider(IsMin, YOffset)
+            local SliderOuter = Library:Create('Frame', {
+                BackgroundColor3 = Color3.new(0, 0, 0);
+                BorderColor3 = Color3.new(0, 0, 0);
+                Position = UDim2.new(0, 0, 0, YOffset);
+                Size = UDim2.new(1, 0, 0, 13);
+                ZIndex = 5;
+                Parent = SliderContainer;
+            });
+
+            Library:AddToRegistry(SliderOuter, {
+                BorderColor3 = 'Black';
+            });
+
+            local SliderInner = Library:Create('Frame', {
+                BackgroundColor3 = Library.MainColor;
+                BorderColor3 = Library.OutlineColor;
+                BorderMode = Enum.BorderMode.Inset;
+                Size = UDim2.new(1, 0, 1, 0);
+                ZIndex = 6;
+                Parent = SliderOuter;
+            });
+
+            Library:AddToRegistry(SliderInner, {
+                BackgroundColor3 = 'MainColor';
+                BorderColor3 = 'OutlineColor';
+            });
+
+            SliderInner:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+                MultiSlider.MaxSize = SliderInner.AbsoluteSize.X;
+                MultiSlider:Display();
+            end);
+
+            local Fill = Library:Create('Frame', {
+                BackgroundColor3 = Library.AccentColor;
+                BorderColor3 = Library.AccentColorDark;
+                Size = UDim2.new(0, 0, 1, 0);
+                ZIndex = 7;
+                Parent = SliderInner;
+            });
+
+            Library:AddToRegistry(Fill, {
+                BackgroundColor3 = 'AccentColor';
+                BorderColor3 = 'AccentColorDark';
+            });
+
+            local FillGradient = Library:Create('UIGradient', {
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(
+                        math.min(255, Library.AccentColor.R * 255 + 20),
+                        math.min(255, Library.AccentColor.G * 255 + 20),
+                        math.min(255, Library.AccentColor.B * 255 + 20)
+                    )),
+                    ColorSequenceKeypoint.new(1, Library.AccentColor)
+                });
+                Rotation = 0;
+                Parent = Fill;
+            });
+
+            Library:AddToRegistry(FillGradient, {
+                Color = function()
+                    return ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(
+                            math.min(255, Library.AccentColor.R * 255 + 20),
+                            math.min(255, Library.AccentColor.G * 255 + 20),
+                            math.min(255, Library.AccentColor.B * 255 + 20)
+                        )),
+                        ColorSequenceKeypoint.new(1, Library.AccentColor)
+                    });
+                end
+            });
+
+            local HideBorderRight = Library:Create('Frame', {
+                BackgroundColor3 = Library.AccentColor;
+                BorderSizePixel = 0;
+                Position = UDim2.new(1, 0, 0, 0);
+                Size = UDim2.new(0, 1, 1, 0);
+                ZIndex = 8;
+                Parent = Fill;
+            });
+
+            Library:AddToRegistry(HideBorderRight, {
+                BackgroundColor3 = 'AccentColor';
+            });
+
+            local DisplayLabel = Library:CreateLabel({
+                Size = UDim2.new(1, 0, 1, 0);
+                TextSize = 14;
+                Text = '';
+                ZIndex = 9;
+                Parent = SliderInner;
+            });
+
+            Library:OnHighlight(SliderOuter, SliderOuter,
+                { BorderColor3 = 'AccentColor' },
+                { BorderColor3 = 'Black' }
+            );
+
+            return {
+                Outer = SliderOuter,
+                Inner = SliderInner,
+                Fill = Fill,
+                Label = DisplayLabel,
+                HideBorder = HideBorderRight
+            };
+        end
+
+        local MinSlider = CreateSlider(true, 0);
+        local MaxSlider = CreateSlider(false, 16);
+
+        function MultiSlider:Display()
+            local Suffix = Info.Suffix or '';
+            
+            MinSlider.Label.Text = 'Min: ' .. MultiSlider.MinValue .. Suffix;
+            MaxSlider.Label.Text = 'Max: ' .. MultiSlider.MaxValue .. Suffix;
+
+            local MinX = math.ceil(Library:MapValue(MultiSlider.MinValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MaxSize));
+            local MaxX = math.ceil(Library:MapValue(MultiSlider.MaxValue, MultiSlider.Min, MultiSlider.Max, 0, MultiSlider.MaxSize));
+            
+            MinSlider.Fill.Size = UDim2.new(0, MinX, 1, 0);
+            MaxSlider.Fill.Size = UDim2.new(0, MaxX, 1, 0);
+
+            MinSlider.HideBorder.Visible = not (MinX == MultiSlider.MaxSize or MinX == 0);
+            MaxSlider.HideBorder.Visible = not (MaxX == MultiSlider.MaxSize or MaxX == 0);
+        end;
+
+        function MultiSlider:OnChanged(Func)
+            MultiSlider.Changed = Func;
+            Func({ Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+        end;
+
+        local function Round(Value)
+            if MultiSlider.Rounding == 0 then
+                return math.floor(Value);
+            end;
+            return tonumber(string.format('%.' .. MultiSlider.Rounding .. 'f', Value))
+        end;
+
+        function MultiSlider:GetValueFromXOffset(X)
+            return Round(Library:MapValue(X, 0, MultiSlider.MaxSize, MultiSlider.Min, MultiSlider.Max));
+        end;
+
+        function MultiSlider:SetMin(Value)
+            local Num = tonumber(Value);
+            if (not Num) then return; end;
+            
+            Num = math.clamp(Num, MultiSlider.Min, MultiSlider.MaxValue);
+            MultiSlider.MinValue = Num;
+            MultiSlider:Display();
+
+            Library:SafeCallback(MultiSlider.Callback, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+            Library:SafeCallback(MultiSlider.Changed, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+        end;
+
+        function MultiSlider:SetMax(Value)
+            local Num = tonumber(Value);
+            if (not Num) then return; end;
+            
+            Num = math.clamp(Num, MultiSlider.MinValue, MultiSlider.Max);
+            MultiSlider.MaxValue = Num;
+            MultiSlider:Display();
+
+            Library:SafeCallback(MultiSlider.Callback, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+            Library:SafeCallback(MultiSlider.Changed, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+        end;
+
+        MinSlider.Inner.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+                local mPos = Mouse.X;
+                local gPos = MinSlider.Fill.Size.X.Offset;
+                local Diff = mPos - (MinSlider.Fill.AbsolutePosition.X + gPos);
+
+                while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+                    local nMPos = Mouse.X;
+                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MaxSize);
+
+                    local nValue = MultiSlider:GetValueFromXOffset(nX);
+                    
+                    -- Don't allow min to go above max
+                    if nValue <= MultiSlider.MaxValue then
+                        MultiSlider.MinValue = nValue;
+
+                        TweenService:Create(MinSlider.Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                            Size = UDim2.new(0, nX, 1, 0)
+                        }):Play();
+
+                        MinSlider.Label.Text = 'Min: ' .. MultiSlider.MinValue .. (Info.Suffix or '');
+                        MinSlider.HideBorder.Visible = not (nX == MultiSlider.MaxSize or nX == 0);
+
+                        Library:SafeCallback(MultiSlider.Callback, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+                        Library:SafeCallback(MultiSlider.Changed, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+                    end;
+
+                    RenderStepped:Wait();
+                end;
+
+                Library:AttemptSave();
+            end;
+        end);
+
+        MaxSlider.Inner.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
+                local mPos = Mouse.X;
+                local gPos = MaxSlider.Fill.Size.X.Offset;
+                local Diff = mPos - (MaxSlider.Fill.AbsolutePosition.X + gPos);
+
+                while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+                    local nMPos = Mouse.X;
+                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, MultiSlider.MaxSize);
+
+                    local nValue = MultiSlider:GetValueFromXOffset(nX);
+                    
+                    -- Don't allow max to go below min
+                    if nValue >= MultiSlider.MinValue then
+                        MultiSlider.MaxValue = nValue;
+
+                        TweenService:Create(MaxSlider.Fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                            Size = UDim2.new(0, nX, 1, 0)
+                        }):Play();
+
+                        MaxSlider.Label.Text = 'Max: ' .. MultiSlider.MaxValue .. (Info.Suffix or '');
+                        MaxSlider.HideBorder.Visible = not (nX == MultiSlider.MaxSize or nX == 0);
+
+                        Library:SafeCallback(MultiSlider.Callback, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+                        Library:SafeCallback(MultiSlider.Changed, { Min = MultiSlider.MinValue, Max = MultiSlider.MaxValue });
+                    end;
+
+                    RenderStepped:Wait();
+                end;
+
+                Library:AttemptSave();
+            end;
+        end);
+
+        MultiSlider:Display();
+        Groupbox:AddBlank(Info.BlankSize or 6);
+        Groupbox:Resize();
+
+        Options[Idx] = MultiSlider;
+
+        return MultiSlider;
+    end;
+
     function Funcs:AddDropdown(Idx, Info)
         if Info.SpecialType == 'Player' then
             Info.Values = GetPlayersString();
