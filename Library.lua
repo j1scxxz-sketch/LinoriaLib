@@ -3210,11 +3210,64 @@ end);
 local WindowLabel = Library:CreateLabel({
     Position = UDim2.new(0, 0, 0, 0);
     Size = UDim2.new(1, 0, 0, 25);
-    Text = Config.Title or '';
+    Text = '';
     TextXAlignment = Enum.TextXAlignment.Center;
     ZIndex = 1;
     Parent = Inner;
 });
+
+-- Animated Title System
+local AnimatedTitle = {
+    Enabled = false,
+    Speed = 0.05,
+    FullText = Config.Title or '',
+    CurrentIndex = 0,
+    Direction = 1, -- 1 for typing, -1 for deleting
+    Connection = nil,
+}
+
+function AnimatedTitle:Update()
+    if not self.Enabled then
+        WindowLabel.Text = self.FullText
+        if self.Connection then
+            self.Connection:Disconnect()
+            self.Connection = nil
+        end
+        return
+    end
+
+    if self.Connection then return end
+
+    self.Connection = Library:GiveSignal(RunService.RenderStepped:Connect(function()
+        if not self.Enabled then
+            AnimatedTitle:Update()
+            return
+        end
+
+        task.wait(self.Speed)
+
+        if self.Direction == 1 then
+            self.CurrentIndex = self.CurrentIndex + 1
+            if self.CurrentIndex >= #self.FullText then
+                self.CurrentIndex = #self.FullText
+                task.wait(1) -- Pause at full text
+                self.Direction = -1
+            end
+        else
+            self.CurrentIndex = self.CurrentIndex - 1
+            if self.CurrentIndex <= 0 then
+                self.CurrentIndex = 0
+                task.wait(0.5) -- Pause at empty
+                self.Direction = 1
+            end
+        end
+
+        WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex)
+    end))
+end
+
+Window.AnimatedTitle = AnimatedTitle
+AnimatedTitle:Update()
 
     local MainSectionOuter = Library:Create('Frame', {
         BackgroundColor3 = Library.BackgroundColor;
@@ -3274,9 +3327,15 @@ local TabArea = Library:Create('Frame', {
         BorderColor3 = 'OutlineColor';
     });
 
-    function Window:SetWindowTitle(Title)
-        WindowLabel.Text = Title;
-    end;
+function Window:SetWindowTitle(Title)
+    Window.AnimatedTitle.FullText = Title
+    Window.AnimatedTitle.CurrentIndex = 0
+    Window.AnimatedTitle.Direction = 1
+    
+    if not Window.AnimatedTitle.Enabled then
+        WindowLabel.Text = Title
+    end
+end;
 
     function Window:AddTab(Name)
         local Tab = {
