@@ -192,8 +192,10 @@ function Library:MakeDraggable(Instance, Cutoff)
                 return;
             end;
 
-            DragPreview.Size = Instance.Size;
+DragPreview.Size = Instance.Size;
             DragPreview.Position = Instance.Position;
+            DragPreview.AnchorPoint = Instance.AnchorPoint;
+            DragPreview.BackgroundTransparency = 0.95;
             DragPreview.Visible = true;
 
             while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
@@ -209,6 +211,7 @@ function Library:MakeDraggable(Instance, Cutoff)
 
             Instance.Position = DragPreview.Position;
             DragPreview.Visible = false;
+            DragPreview.BackgroundTransparency = 1;
         end;
     end)
 end;
@@ -3100,19 +3103,38 @@ function Library:CreateWindow(...)
 
     Library:MakeDraggable(Outer, 25);
 
-    -- Invisible resize area in bottom-right corner
-local ResizeArea = Library:Create('Frame', {
+    -- Resize areas
+local MinSize = Vector2.new(400, 300);
+local MaxSize = Vector2.new(1000, 800);
+
+-- Bottom-right corner resize
+local ResizeCorner = Library:Create('Frame', {
     BackgroundTransparency = 1;
-    Position = UDim2.new(1, -20, 1, -20);
-    Size = UDim2.new(0, 20, 0, 20);
+    Position = UDim2.new(1, -15, 1, -15);
+    Size = UDim2.new(0, 15, 0, 15);
     ZIndex = 999;
     Parent = Outer;
 });
 
-local MinSize = Vector2.new(400, 300);
-local MaxSize = Vector2.new(1000, 800);
+-- Bottom edge resize
+local ResizeBottom = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(0, 15, 1, -5);
+    Size = UDim2.new(1, -30, 0, 5);
+    ZIndex = 999;
+    Parent = Outer;
+});
 
-ResizeArea.InputBegan:Connect(function(Input)
+-- Right edge resize
+local ResizeRight = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Position = UDim2.new(1, -5, 0, 15);
+    Size = UDim2.new(0, 5, 1, -30);
+    ZIndex = 999;
+    Parent = Outer;
+});
+
+ResizeCorner.InputBegan:Connect(function(Input)
     if Input.UserInputType == Enum.UserInputType.MouseButton1 then
         local StartSize = Outer.AbsoluteSize;
         local StartPos = Vector2.new(Mouse.X, Mouse.Y);
@@ -3125,6 +3147,38 @@ ResizeArea.InputBegan:Connect(function(Input)
             );
 
             Outer.Size = UDim2.fromOffset(NewSize.X, NewSize.Y);
+
+            RenderStepped:Wait();
+        end;
+    end;
+end);
+
+ResizeBottom.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local StartSize = Outer.AbsoluteSize;
+        local StartPos = Mouse.Y;
+
+        while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+            local Delta = Mouse.Y - StartPos;
+            local NewHeight = math.clamp(StartSize.Y + Delta, MinSize.Y, MaxSize.Y);
+
+            Outer.Size = UDim2.fromOffset(Outer.AbsoluteSize.X, NewHeight);
+
+            RenderStepped:Wait();
+        end;
+    end;
+end);
+
+ResizeRight.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local StartSize = Outer.AbsoluteSize;
+        local StartPos = Mouse.X;
+
+        while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+            local Delta = Mouse.X - StartPos;
+            local NewWidth = math.clamp(StartSize.X + Delta, MinSize.X, MaxSize.X);
+
+            Outer.Size = UDim2.fromOffset(NewWidth, Outer.AbsoluteSize.Y);
 
             RenderStepped:Wait();
         end;
