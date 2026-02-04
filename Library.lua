@@ -2572,18 +2572,22 @@ end);
             Parent = ScreenGui;
         });
 
-        local function RecalculateListPosition()
-            ListOuter.Position = UDim2.fromOffset(DropdownOuter.AbsolutePosition.X, DropdownOuter.AbsolutePosition.Y + DropdownOuter.Size.Y.Offset + 1);
-        end;
+local function RecalculateListPosition()
+    ListOuter.Position = UDim2.fromOffset(DropdownOuter.AbsolutePosition.X, DropdownOuter.AbsolutePosition.Y + DropdownOuter.AbsoluteSize.Y + 1);
+end;
 
-        local function RecalculateListSize(YSize)
-            ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X, YSize or (MAX_DROPDOWN_ITEMS * 20 + 2))
-        end;
+local function RecalculateListSize(YSize)
+    ListOuter.Size = UDim2.fromOffset(DropdownOuter.AbsoluteSize.X, YSize or (MAX_DROPDOWN_ITEMS * 20 + 2))
+end;
 
-        RecalculateListPosition();
-        RecalculateListSize();
+RecalculateListPosition();
+RecalculateListSize();
 
-        DropdownOuter:GetPropertyChangedSignal('AbsolutePosition'):Connect(RecalculateListPosition);
+DropdownOuter:GetPropertyChangedSignal('AbsolutePosition'):Connect(RecalculateListPosition);
+DropdownOuter:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
+    RecalculateListPosition();
+    RecalculateListSize();
+end);
 
         local ListInner = Library:Create('Frame', {
             BackgroundColor3 = Library.MainColor;
@@ -3382,8 +3386,8 @@ local WindowLabel = Library:CreateLabel({
 
 -- Animated Title System
 local AnimatedTitle = {
-    Enabled = false,
-    Speed = 0.05,
+    Enabled = true,
+    Speed = 0.08,
     FullText = Config.Title or '',
     CurrentIndex = 0,
     Direction = 1, -- 1 for typing, -1 for deleting
@@ -3402,31 +3406,37 @@ function AnimatedTitle:Update()
 
     if self.Connection then return end
 
-    self.Connection = Library:GiveSignal(RunService.RenderStepped:Connect(function()
+    local LastUpdate = tick()
+    
+    self.Connection = Library:GiveSignal(RunService.Heartbeat:Connect(function()
         if not self.Enabled then
             AnimatedTitle:Update()
             return
         end
 
-        task.wait(self.Speed)
+        local Now = tick()
+        if Now - LastUpdate < self.Speed then
+            return
+        end
+        LastUpdate = Now
 
         if self.Direction == 1 then
             self.CurrentIndex = self.CurrentIndex + 1
             if self.CurrentIndex >= #self.FullText then
                 self.CurrentIndex = #self.FullText
-                task.wait(1) -- Pause at full text
+                LastUpdate = Now + 2 -- Pause at full text for 2 seconds
                 self.Direction = -1
             end
         else
             self.CurrentIndex = self.CurrentIndex - 1
             if self.CurrentIndex <= 0 then
                 self.CurrentIndex = 0
-                task.wait(0.5) -- Pause at empty
+                LastUpdate = Now + 1 -- Pause at empty for 1 second
                 self.Direction = 1
             end
         end
 
-        WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex)
+        WindowLabel.Text = string.sub(self.FullText, 1, self.CurrentIndex) .. (self.Direction == 1 and self.CurrentIndex < #self.FullText and "|" or "")
     end))
 end
 
