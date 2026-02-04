@@ -278,7 +278,11 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, Properties do
-            Instance[Property] = Library[ColorIdx] or ColorIdx;
+            local TargetValue = Library[ColorIdx] or ColorIdx;
+            
+            TweenService:Create(Instance, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                [Property] = TargetValue
+            }):Play();
 
             if Reg and Reg.Properties[Property] then
                 Reg.Properties[Property] = ColorIdx;
@@ -290,7 +294,11 @@ function Library:OnHighlight(HighlightInstance, Instance, Properties, Properties
         local Reg = Library.RegistryMap[Instance];
 
         for Property, ColorIdx in next, PropertiesDefault do
-            Instance[Property] = Library[ColorIdx] or ColorIdx;
+            local TargetValue = Library[ColorIdx] or ColorIdx;
+            
+            TweenService:Create(Instance, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                [Property] = TargetValue
+            }):Play();
 
             if Reg and Reg.Properties[Property] then
                 Reg.Properties[Property] = ColorIdx;
@@ -466,6 +474,15 @@ local DisplayFrame = Library:Create('Frame', {
     ZIndex = 6;
     Parent = ToggleLabel;
 });
+
+Library:AddToRegistry(DisplayFrame, {
+            BorderColor3 = 'OutlineColor';
+        });
+
+        Library:OnHighlight(DisplayFrame, DisplayFrame,
+            { BorderColor3 = 'AccentColor' },
+            { BorderColor3 = 'OutlineColor' }
+        );
 
 Library:Create('UICorner', {
     CornerRadius = UDim.new(0, 3);
@@ -1268,6 +1285,11 @@ Library:Create(DisplayInner, {
             BackgroundColor3 = 'BackgroundColor';
             BorderColor3 = 'OutlineColor';
         });
+
+        Library:OnHighlight(PickOuter, PickOuter,
+            { BorderColor3 = 'AccentColor' },
+            { BorderColor3 = 'Black' }
+        );
 
         local DisplayLabel = Library:CreateLabel({
             Size = UDim2.new(1, 0, 1, 0);
