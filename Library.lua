@@ -3433,17 +3433,18 @@ local GroupboxLabel = Library:CreateLabel({
                 BackgroundColor3 = 'BackgroundColor';
             });
 
-            local Highlight = Library:Create('Frame', {
-                BackgroundColor3 = Library.AccentColor;
-                BorderSizePixel = 0;
-                Size = UDim2.new(1, 0, 0, 2);
-                ZIndex = 10;
-                Parent = BoxInner;
-            });
+local Highlight = Library:Create('Frame', {
+    BackgroundColor3 = Library.AccentColor;
+    BorderSizePixel = 0;
+    Size = UDim2.new(1, 0, 0, 2);
+    ZIndex = 10;
+    BackgroundTransparency = 1;
+    Parent = BoxInner;
+});
 
-            Library:AddToRegistry(Highlight, {
-                BackgroundColor3 = 'AccentColor';
-            });
+Library:AddToRegistry(Highlight, {
+    BackgroundColor3 = 'AccentColor';
+});
 
             local TabboxButtons = Library:Create('Frame', {
                 BackgroundTransparency = 1;
