@@ -4,8 +4,8 @@
 local repo = 'https://raw.githubusercontent.com/j1scxxz-sketch/LinoriaLib/refs/heads/main/'
 
 local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
-local ThemeManager = loadstring(game:HttpGet(repo .. 'ThemeManager.lua'))()  -- No addons/
-local SaveManager = loadstring(game:HttpGet(repo .. 'SaveManager.lua'))()    -- No addons/
+local ThemeManager = loadstring(game:HttpGet(repo .. 'ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'SaveManager.lua'))() 
 
 local Window = Library:CreateWindow({
     -- Set Centerf to true if you want the menu to appear in the center
@@ -72,7 +72,7 @@ LeftGroupBox:AddToggle('MyToggle', {
     end
 })
 
--- Risky Toggle (Red Text)
+-- Risky Toggle
 LeftGroupBox:AddToggle('MyRiskyToggle', {
     Text = 'This is a risky toggle',
     Default = false,
