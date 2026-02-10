@@ -1,11 +1,9 @@
 -- New example script written by wally
 -- You can suggest changes with a pull request or something
 
-local repo = 'https://raw.githubusercontent.com/j1scxxz-sketch/LinoriaLib/refs/heads/main/'
-
-local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
-local ThemeManager = loadstring(game:HttpGet(repo .. 'ThemeManager.lua'))()
-local SaveManager = loadstring(game:HttpGet(repo .. 'SaveManager.lua'))() 
+local Library = loadstring(game:HttpGet('https://pastebin.com/raw/S3MN1ue7'))()
+local SaveManager = loadstring(game:HttpGet('https://pastefy.app/TcRas1ug/raw'))()
+local ThemeManager = loadstring(game:HttpGet('https://pastefy.app/phkvcGoK/raw'))()
 
 local Window = Library:CreateWindow({
     -- Set Centerf to true if you want the menu to appear in the center
@@ -92,6 +90,28 @@ LeftGroupBox:AddMultiSlider('RangeSlider', {
     Compact = false,
     Callback = function(Values)
         print('Min:', Values.Min, 'Max:', Values.Max)
+    end
+})
+
+LeftGroupBox:AddDualSlider('SpeedSlider', 'JumpSlider', {
+    Text = 'Speed',
+    Default = 16,
+    Min = 0,
+    Max = 100,
+    Rounding = 0,
+    Suffix = '',
+    Callback = function(Value)
+        -- handle speed change
+    end
+}, {
+    Text = 'Jump',
+    Default = 50,
+    Min = 0,
+    Max = 200,
+    Rounding = 0,
+    Suffix = '',
+    Callback = function(Value)
+        -- handle jump change
     end
 })
 
@@ -467,6 +487,42 @@ SaveManager:SetLibrary(Library)
 -- Ignore keys that are used by ThemeManager.
 -- (we dont want configs to save themes, do we?)
 SaveManager:IgnoreThemeSettings()
+local GlowGroup = Tabs['UI Settings']:AddRightGroupbox('Glow Effect')
+
+GlowGroup:AddToggle('GlowEnabled', {
+    Text = 'Glow Enabled',
+    Default = Library.GlowEnabled,
+    Callback = function(Value)
+        Library:SetGlowEnabled(Value)
+    end
+})
+
+GlowGroup:AddToggle('GlowMatchAccent', {
+    Text = 'Match Accent Color',
+    Default = Library.GlowColorMatchAccent,
+    Callback = function(Value)
+        Library:SetGlowMatchAccent(Value)
+    end
+})
+
+GlowGroup:AddLabel('Glow Color'):AddColorPicker('GlowColor', {
+    Default = Library.GlowColor,
+    Title = 'Glow Color',
+    Callback = function(Value)
+        Library:SetGlowColor(Value)
+    end
+})
+
+GlowGroup:AddSlider('GlowTransparency', {
+    Text = 'Glow Transparency',
+    Default = Library.GlowTransparency,
+    Min = 0,
+    Max = 1,
+    Rounding = 2,
+    Callback = function(Value)
+        Library:SetGlowTransparency(Value)
+    end
+})
 
 -- Adds our MenuKeybind to the ignore list
 -- (do you want each config to have a different menu key? probably not.)
