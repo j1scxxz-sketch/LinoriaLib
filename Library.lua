@@ -3715,7 +3715,7 @@ Library:AddToRegistry(WindowLabel, {
 });
 
 local GameNameLabel = Library:CreateLabel({
-    Position = UDim2.new(1, -10, 0, 0);
+    Position = UDim2.new(1, -210, 0, 0);
     Size = UDim2.new(0, 200, 0, 25);
     Text = game:GetService('MarketplaceService'):GetProductInfo(game.PlaceId).Name;
     TextXAlignment = Enum.TextXAlignment.Right;
