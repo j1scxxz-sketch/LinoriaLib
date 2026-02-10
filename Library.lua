@@ -3716,10 +3716,10 @@ Library:AddToRegistry(WindowLabel, {
 
 local GameNameLabel = Library:CreateLabel({
     Position = UDim2.new(1, -10, 0, 0);
-    Size = UDim2.new(0, 0, 0, 25);
+    Size = UDim2.new(0, 200, 0, 25);
     Text = game:GetService('MarketplaceService'):GetProductInfo(game.PlaceId).Name;
     TextXAlignment = Enum.TextXAlignment.Right;
-    TextSize = 14;
+    TextSize = 16;
     ZIndex = 1;
     Parent = Inner;
 });
@@ -3727,9 +3727,6 @@ local GameNameLabel = Library:CreateLabel({
 Library:RemoveFromRegistry(GameNameLabel);
 GameNameLabel.TextColor3 = Library.RiskColor;
 Library:AddToRegistry(GameNameLabel, { TextColor3 = 'RiskColor' });
-
-local GameNameWidth = Library:GetTextBounds(GameNameLabel.Text, Library.Font, 14);
-GameNameLabel.Size = UDim2.new(0, GameNameWidth + 10, 0, 25);
 
 local AnimatedTitle = {
     Enabled = true,
