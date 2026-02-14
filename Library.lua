@@ -416,8 +416,12 @@ function Library:UpdateColorsUsingRegistry()
     end;
 
     Library:UpdateGlow();
+    
+    -- Update watermark colors
+    if Library.WatermarkRawText then
+        Library:SetWatermark(Library.WatermarkRawText);
+    end
 end;
-
 function Library:UpdateGlow()
     local GlowColor = Library.GlowColorMatchAccent and Library.AccentColor or Library.GlowColor;
 
@@ -1486,7 +1490,7 @@ function KeyPicker:Update()
                 end;
             end;
 
-            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 10, 210), 0, YSize + 23)
+            Library.KeybindFrame.Size = UDim2.new(0, math.max(XSize + 16, 210), 0, YSize + 34)
         end;
 
         function KeyPicker:GetState()
@@ -3811,14 +3815,19 @@ function Library:SetWatermark(Text)
     Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3);
     Library:SetWatermarkVisibility(true)
 
+    -- Store raw text for later updates
+    Library.WatermarkRawText = Text;
+    
     -- Split the text to color only the first part
-    local parts = string.split(Text, '|')
-    if #parts >= 2 then
+    local pipePos = string.find(Text, '|')
+    if pipePos then
+        local firstPart = string.sub(Text, 1, pipePos - 1)
+        local restPart = string.sub(Text, pipePos)
         local accentHex = string.format("#%02X%02X%02X", 
             math.floor(Library.AccentColor.R * 255),
             math.floor(Library.AccentColor.G * 255),
             math.floor(Library.AccentColor.B * 255))
-        Library.WatermarkText.Text = string.format('<font color="%s">%s</font> | %s', accentHex, parts[1], parts[2])
+        Library.WatermarkText.Text = string.format('<font color="%s">%s</font>%s', accentHex, firstPart, restPart)
     else
         Library.WatermarkText.Text = Text;
     end
