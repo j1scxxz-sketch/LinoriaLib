@@ -3676,14 +3676,19 @@ table.insert(Library.GlowInstances, WatermarkGlow);
         end
     });
 
-    local WatermarkLabel = Library:CreateLabel({
-        Position = UDim2.new(0, 5, 0, 0);
-        Size = UDim2.new(1, -4, 1, 0);
-        TextSize = 14;
-        TextXAlignment = Enum.TextXAlignment.Left;
-        ZIndex = 203;
-        Parent = InnerFrame;
-    });
+local WatermarkLabel = Library:CreateLabel({
+    Position = UDim2.new(0, 5, 0, 0);
+    Size = UDim2.new(1, -4, 1, 0);
+    TextSize = 14;
+    TextXAlignment = Enum.TextXAlignment.Left;
+    ZIndex = 203;
+    Parent = InnerFrame;
+});
+
+Library:RemoveFromRegistry(WatermarkLabel);
+Library:AddToRegistry(WatermarkLabel, {
+    TextColor3 = 'AccentColor';
+});
 
     Library.Watermark = WatermarkOuter;
     Library.WatermarkText = WatermarkLabel;
@@ -3745,15 +3750,20 @@ table.insert(Library.GlowInstances, KeybindGlow);
         BackgroundColor3 = 'AccentColor';
     }, true);
 
-    local KeybindLabel = Library:CreateLabel({
-        Size = UDim2.new(1, 0, 0, 20);
-        Position = UDim2.fromOffset(5, 2),
-        TextXAlignment = Enum.TextXAlignment.Left,
+local KeybindLabel = Library:CreateLabel({
+    Size = UDim2.new(1, 0, 0, 20);
+    Position = UDim2.fromOffset(0, 2),
+    TextXAlignment = Enum.TextXAlignment.Center,
+    TextSize = 15;
+    Text = 'Keybinds';
+    ZIndex = 104;
+    Parent = KeybindInner;
+});
 
-        Text = 'Keybinds';
-        ZIndex = 104;
-        Parent = KeybindInner;
-    });
+Library:RemoveFromRegistry(KeybindLabel);
+Library:AddToRegistry(KeybindLabel, {
+    TextColor3 = 'AccentColor';
+});
 
     local KeybindContainer = Library:Create('Frame', {
         BackgroundTransparency = 1;
