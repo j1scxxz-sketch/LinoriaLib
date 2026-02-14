@@ -3682,12 +3682,8 @@ local WatermarkLabel = Library:CreateLabel({
     TextSize = 14;
     TextXAlignment = Enum.TextXAlignment.Left;
     ZIndex = 203;
+    RichText = true;
     Parent = InnerFrame;
-});
-
-Library:RemoveFromRegistry(WatermarkLabel);
-Library:AddToRegistry(WatermarkLabel, {
-    TextColor3 = 'AccentColor';
 });
 
     Library.Watermark = WatermarkOuter;
@@ -3751,8 +3747,8 @@ table.insert(Library.GlowInstances, KeybindGlow);
     }, true);
 
 local KeybindLabel = Library:CreateLabel({
-    Size = UDim2.new(1, 0, 0, 20);
-    Position = UDim2.fromOffset(0, 2),
+    Size = UDim2.new(1, 0, 0, 18);
+    Position = UDim2.fromOffset(0, 4),
     TextXAlignment = Enum.TextXAlignment.Center,
     TextSize = 15;
     Text = 'Keybinds';
@@ -3765,24 +3761,41 @@ Library:AddToRegistry(KeybindLabel, {
     TextColor3 = 'AccentColor';
 });
 
-    local KeybindContainer = Library:Create('Frame', {
-        BackgroundTransparency = 1;
-        Size = UDim2.new(1, 0, 1, -20);
-        Position = UDim2.new(0, 0, 0, 20);
-        ZIndex = 1;
-        Parent = KeybindInner;
-    });
+-- Divider line under header
+local KeybindDivider = Library:Create('Frame', {
+    BackgroundColor3 = Library.OutlineColor;
+    BorderSizePixel = 0;
+    Position = UDim2.new(0, 6, 0, 24);
+    Size = UDim2.new(1, -12, 0, 1);
+    ZIndex = 104;
+    Parent = KeybindInner;
+});
 
-    Library:Create('UIListLayout', {
-        FillDirection = Enum.FillDirection.Vertical;
-        SortOrder = Enum.SortOrder.LayoutOrder;
-        Parent = KeybindContainer;
-    });
+Library:AddToRegistry(KeybindDivider, {
+    BackgroundColor3 = 'OutlineColor';
+}, true);
 
-    Library:Create('UIPadding', {
-        PaddingLeft = UDim.new(0, 5),
-        Parent = KeybindContainer,
-    })
+local KeybindContainer = Library:Create('Frame', {
+    BackgroundTransparency = 1;
+    Size = UDim2.new(1, 0, 1, -28);
+    Position = UDim2.new(0, 0, 0, 28);
+    ZIndex = 1;
+    Parent = KeybindInner;
+});
+
+Library:Create('UIListLayout', {
+    FillDirection = Enum.FillDirection.Vertical;
+    SortOrder = Enum.SortOrder.LayoutOrder;
+    Padding = UDim.new(0, 2);
+    Parent = KeybindContainer;
+});
+
+Library:Create('UIPadding', {
+    PaddingLeft = UDim.new(0, 8),
+    PaddingRight = UDim.new(0, 8),
+    PaddingTop = UDim.new(0, 4),
+    Parent = KeybindContainer,
+})
 
     Library.KeybindFrame = KeybindOuter;
     Library.KeybindContainer = KeybindContainer;
@@ -3798,7 +3811,17 @@ function Library:SetWatermark(Text)
     Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3);
     Library:SetWatermarkVisibility(true)
 
-    Library.WatermarkText.Text = Text;
+    -- Split the text to color only the first part
+    local parts = string.split(Text, '|')
+    if #parts >= 2 then
+        local accentHex = string.format("#%02X%02X%02X", 
+            math.floor(Library.AccentColor.R * 255),
+            math.floor(Library.AccentColor.G * 255),
+            math.floor(Library.AccentColor.B * 255))
+        Library.WatermarkText.Text = string.format('<font color="%s">%s</font> | %s', accentHex, parts[1], parts[2])
+    else
+        Library.WatermarkText.Text = Text;
+    end
 end;
 
 function Library:Notify(Text, Time)
