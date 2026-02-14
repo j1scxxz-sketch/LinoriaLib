@@ -458,6 +458,18 @@ function Library:SetGlowMatchAccent(Match)
     Library:UpdateGlow();
 end;
 
+function Library:SetKeybindFilter(Filter)
+    assert(Filter == 'Always' or Filter == 'On' or Filter == 'Off', 'Invalid keybind filter. Use "Always", "On", or "Off"');
+    Library.KeybindFilter = Filter;
+    
+    -- Update all keybinds
+    for _, Option in next, Options do
+        if Option.Type == 'KeyPicker' then
+            Option:Update();
+        end;
+    end;
+end;
+
 function Library:GiveSignal(Signal)
     -- Only used for signals not attached to library instances, as those should be cleaned up on object destruction by Roblox
     table.insert(Library.Signals, Signal)
@@ -1441,16 +1453,23 @@ Library:Create(DisplayInner, {
             ModeButtons[Mode] = ModeButton;
         end;
 
-        function KeyPicker:Update()
-            if Info.NoUI then
-                return;
-            end;
+function KeyPicker:Update()
+    if Info.NoUI then
+        return;
+    end;
 
-            local State = KeyPicker:GetState();
+    local State = KeyPicker:GetState();
 
-            ContainerLabel.Text = string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode);
+    ContainerLabel.Text = string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode);
 
-            ContainerLabel.Visible = true;
+    local ShouldShow = true;
+    if Library.KeybindFilter == 'On' then
+        ShouldShow = State;
+    elseif Library.KeybindFilter == 'Off' then
+        ShouldShow = not State;
+    end;
+
+    ContainerLabel.Visible = ShouldShow;
             ContainerLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
 
             Library.RegistryMap[ContainerLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
@@ -3600,6 +3619,23 @@ do
         Parent = ScreenGui;
     });
 
+    local WatermarkGlow = Library:Create('ImageLabel', {
+    AnchorPoint = Vector2.new(0.5, 0.5);
+    BackgroundTransparency = 1;
+    Image = 'http://www.roblox.com/asset/?id=18245826428';
+    ImageColor3 = Library.GlowColorMatchAccent and Library.AccentColor or Library.GlowColor;
+    ImageTransparency = Library.GlowTransparency;
+    Position = UDim2.new(0.5, 0, 0.5, 0);
+    Size = UDim2.new(1, Library.GlowSize, 1, Library.GlowSize);
+    ScaleType = Enum.ScaleType.Slice;
+    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79));
+    Visible = Library.GlowEnabled;
+    ZIndex = 199;
+    Parent = WatermarkOuter;
+});
+
+table.insert(Library.GlowInstances, WatermarkGlow);
+
     local WatermarkInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
         BorderColor3 = Library.AccentColor;
@@ -3652,6 +3688,7 @@ do
     Library.Watermark = WatermarkOuter;
     Library.WatermarkText = WatermarkLabel;
     Library:MakeDraggable(Library.Watermark);
+    Library.KeybindFilter = 'Always'; 
 
 
 
@@ -3664,6 +3701,23 @@ do
         ZIndex = 100;
         Parent = ScreenGui;
     });
+
+    local KeybindGlow = Library:Create('ImageLabel', {
+    AnchorPoint = Vector2.new(0.5, 0.5);
+    BackgroundTransparency = 1;
+    Image = 'http://www.roblox.com/asset/?id=18245826428';
+    ImageColor3 = Library.GlowColorMatchAccent and Library.AccentColor or Library.GlowColor;
+    ImageTransparency = Library.GlowTransparency;
+    Position = UDim2.new(0.5, 0, 0.5, 0);
+    Size = UDim2.new(1, Library.GlowSize, 1, Library.GlowSize);
+    ScaleType = Enum.ScaleType.Slice;
+    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79));
+    Visible = Library.GlowEnabled;
+    ZIndex = 99;
+    Parent = KeybindOuter;
+});
+
+table.insert(Library.GlowInstances, KeybindGlow);
 
     local KeybindInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
