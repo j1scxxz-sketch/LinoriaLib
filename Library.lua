@@ -519,6 +519,224 @@ function Library:UpdateBlurForMenuState(IsOpen)
     end
 end
 
+-- Item Viewer defaults (can be overridden by example script)
+if not Library.ItemViewer then
+    Library.ItemViewer = {
+        Enabled = false;
+        CurrentItem = 'Sword';
+        Transparency = 0;
+        Reflectance = 0;
+        Speed = 1;
+        Material = Enum.Material.SmoothPlastic;
+    }
+end
+
+function Library:CreateItemPart(itemName)
+    local model = Instance.new('Model')
+
+    local function makePart(size, cframe, shape, color)
+        local p = Instance.new('Part')
+        p.Anchored = true
+        p.CanCollide = false
+        p.Size = size
+        p.CFrame = cframe
+        p.Color = color or Library.AccentColor
+        p.Material = Library.ItemViewer.Material
+        p.Reflectance = Library.ItemViewer.Reflectance
+        p.Transparency = Library.ItemViewer.Transparency
+        p.Shape = shape or Enum.PartType.Block
+        p.Parent = model
+        return p
+    end
+
+    local c = CFrame.new(0, 0, 0)
+    local col = Library.AccentColor
+
+    if itemName == 'Sword' then
+        -- blade
+        makePart(Vector3.new(0.2, 2.5, 0.1), c * CFrame.new(0, 0.5, 0), Enum.PartType.Block, col)
+        -- guard
+        makePart(Vector3.new(1.2, 0.15, 0.15), c * CFrame.new(0, -0.6, 0), Enum.PartType.Block, col)
+        -- handle
+        makePart(Vector3.new(0.15, 0.8, 0.15), c * CFrame.new(0, -1.1, 0), Enum.PartType.Block, col)
+        -- pommel
+        makePart(Vector3.new(0.3, 0.3, 0.3), c * CFrame.new(0, -1.6, 0), Enum.PartType.Ball, col)
+
+    elseif itemName == 'Heart' then
+        -- rough heart shape from spheres and a block
+        makePart(Vector3.new(0.9, 0.9, 0.6), c * CFrame.new(-0.35, 0.2, 0), Enum.PartType.Ball, col)
+        makePart(Vector3.new(0.9, 0.9, 0.6), c * CFrame.new(0.35, 0.2, 0), Enum.PartType.Ball, col)
+        makePart(Vector3.new(1.4, 1.0, 0.6), c * CFrame.new(0, -0.2, 0), Enum.PartType.Block, col)
+        -- bottom point
+        makePart(Vector3.new(0.4, 0.6, 0.5), c * CFrame.new(0, -0.85, 0) * CFrame.Angles(0, 0, math.rad(45)), Enum.PartType.Block, col)
+
+    elseif itemName == 'Cross' then
+        -- vertical bar
+        makePart(Vector3.new(0.3, 2.4, 0.3), c, Enum.PartType.Block, col)
+        -- horizontal bar
+        makePart(Vector3.new(1.6, 0.3, 0.3), c * CFrame.new(0, 0.5, 0), Enum.PartType.Block, col)
+
+    elseif itemName == 'Catholic Cross' then
+        -- tall vertical
+        makePart(Vector3.new(0.28, 2.8, 0.28), c, Enum.PartType.Block, col)
+        -- main horizontal
+        makePart(Vector3.new(1.8, 0.28, 0.28), c * CFrame.new(0, 0.6, 0), Enum.PartType.Block, col)
+        -- small top bar (titulus)
+        makePart(Vector3.new(0.9, 0.22, 0.22), c * CFrame.new(0, 1.1, 0), Enum.PartType.Block, col)
+        -- angled foot rest
+        makePart(Vector3.new(0.7, 0.2, 0.2), c * CFrame.new(0, -0.7, 0) * CFrame.Angles(0, 0, math.rad(20)), Enum.PartType.Block, col)
+
+    elseif itemName == 'Orthodox Cross' then
+        -- vertical
+        makePart(Vector3.new(0.28, 2.8, 0.28), c, Enum.PartType.Block, col)
+        -- top small bar
+        makePart(Vector3.new(0.9, 0.22, 0.22), c * CFrame.new(0, 1.1, 0), Enum.PartType.Block, col)
+        -- main horizontal
+        makePart(Vector3.new(1.8, 0.28, 0.28), c * CFrame.new(0, 0.5, 0), Enum.PartType.Block, col)
+        -- angled bottom bar
+        makePart(Vector3.new(0.85, 0.22, 0.22), c * CFrame.new(0, -0.7, 0) * CFrame.Angles(0, 0, math.rad(25)), Enum.PartType.Block, col)
+    end
+
+    return model
+end
+
+function Library:SetupItemViewer()
+    if Library.ItemViewerFrame then
+        Library.ItemViewerFrame:Destroy()
+        Library.ItemViewerFrame = nil
+    end
+
+    local screenSize = Library.ScreenGui.AbsoluteSize
+    local size = 180
+
+    local Frame = Library:Create('Frame', {
+        BackgroundColor3 = Color3.new(0, 0, 0);
+        BackgroundTransparency = 0.3;
+        BorderSizePixel = 0;
+        Position = UDim2.new(0.5, -size/2, 0.5, -size/2);
+        Size = UDim2.fromOffset(size, size);
+        ZIndex = 5;
+        Parent = Library.ScreenGui;
+        Visible = false;
+    })
+
+    Library:Create('UICorner', {
+        CornerRadius = UDim.new(0, 8);
+        Parent = Frame;
+    })
+
+    -- Accent border
+    local Stroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor;
+        Thickness = 1.5;
+        Parent = Frame;
+    })
+
+    Library:AddToRegistry(Stroke, {
+        Color = 'AccentColor';
+    })
+
+    local VP = Library:Create('ViewportFrame', {
+        BackgroundTransparency = 1;
+        BorderSizePixel = 0;
+        Size = UDim2.new(1, 0, 1, 0);
+        ZIndex = 6;
+        LightColor = Color3.new(1, 1, 1);
+        LightDirection = Vector3.new(-1, -1, -1);
+        Ambient = Color3.fromRGB(180, 180, 180);
+        Parent = Frame;
+    })
+
+    local Camera = Instance.new('Camera')
+    Camera.CFrame = CFrame.new(Vector3.new(0, 0, 6), Vector3.new(0, 0, 0))
+    Camera.FieldOfView = 50
+    Camera.Parent = VP
+    VP.CurrentCamera = Camera
+
+    Library.ItemViewerFrame = Frame
+    Library.ItemViewerVP = VP
+    Library.ItemViewerCamera = Camera
+    Library.ItemViewerStroke = Stroke
+
+    Library:RefreshItemViewer()
+end
+
+function Library:RefreshItemViewer()
+    if not Library.ItemViewerVP then return end
+
+    -- clear old model
+    for _, v in next, Library.ItemViewerVP:GetChildren() do
+        if v:IsA('Model') or v:IsA('Part') then
+            v:Destroy()
+        end
+    end
+
+    local model = Library:CreateItemPart(Library.ItemViewer.CurrentItem)
+    model.Parent = Library.ItemViewerVP
+
+    -- update all parts with current settings
+    for _, p in next, model:GetDescendants() do
+        if p:IsA('BasePart') then
+            p.Color = Library.AccentColor
+            p.Material = Library.ItemViewer.Material
+            p.Reflectance = Library.ItemViewer.Reflectance
+            p.Transparency = Library.ItemViewer.Transparency
+        end
+    end
+
+    -- start spin loop if not already running
+    if not Library.ItemViewerSpinning then
+        Library.ItemViewerSpinning = true
+        task.spawn(function()
+            local angle = 0
+            while Library.ItemViewerSpinning and Library.ItemViewerVP and Library.ItemViewerVP.Parent do
+                if Library.ItemViewerFrame and Library.ItemViewerFrame.Visible then
+                    angle = angle + (Library.ItemViewer.Speed * 0.8)
+                    local rad = math.rad(angle)
+
+                    -- update part colors to follow accent (in case theme changed)
+                    for _, p in next, Library.ItemViewerVP:GetDescendants() do
+                        if p:IsA('BasePart') then
+                            p.Color = Library.AccentColor
+                        end
+                    end
+
+                    Library.ItemViewerCamera.CFrame = CFrame.new(
+                        Vector3.new(math.sin(rad) * 6, 1, math.cos(rad) * 6),
+                        Vector3.new(0, 0, 0)
+                    )
+                end
+                task.wait(0.016)
+            end
+            Library.ItemViewerSpinning = false
+        end)
+    end
+end
+
+function Library:ShowItemViewer()
+    if Library.ItemViewerFrame then
+        Library.ItemViewerFrame.Visible = true
+    end
+end
+
+function Library:HideItemViewer()
+    if Library.ItemViewerFrame then
+        Library.ItemViewerFrame.Visible = false
+    end
+end
+
+function Library:UpdateItemViewerParts()
+    if not Library.ItemViewerVP then return end
+    for _, p in next, Library.ItemViewerVP:GetDescendants() do
+        if p:IsA('BasePart') then
+            p.Color = Library.AccentColor
+            p.Material = Library.ItemViewer.Material
+            p.Reflectance = Library.ItemViewer.Reflectance
+            p.Transparency = Library.ItemViewer.Transparency
+        end
+    end
+end
+
 function Library:SetKeybindFilter(Filter)
     assert(Filter == 'Always' or Filter == 'On' or Filter == 'Off', 'Invalid keybind filter. Use "Always", "On", or "Off"');
     Library.KeybindFilter = Filter;
@@ -4826,6 +5044,14 @@ local TransparencyCache = {};
         Toggled = (not Toggled);
         ModalElement.Modal = Toggled;
         Library:UpdateBlurForMenuState(Toggled);
+
+        if Library.ItemViewer.Enabled then
+            if Toggled then
+                Library:ShowItemViewer()
+            else
+                Library:HideItemViewer()
+            end
+        end
 
         if Toggled then
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
