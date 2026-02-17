@@ -462,27 +462,60 @@ function Library:SetGlowMatchAccent(Match)
     Library:UpdateGlow();
 end;
 
-function Library:SetUIBlur(Enabled, Transparency)
+function Library:SetUIBlur(Enabled, Strength)
+    Library.BlurWanted = Enabled
+
     if Enabled then
         if not Library.BlurEffect then
             Library.BlurEffect = Instance.new('BlurEffect')
-            Library.BlurEffect.Size = 24
+            Library.BlurEffect.Size = 0
             Library.BlurEffect.Parent = game:GetService('Lighting')
         end
-        Library.BlurEffect.Enabled = true
-        if Transparency then
-            Library.BlurEffect.Size = math.floor((1 - Transparency) * 56)
+        -- Only actually show blur if menu is currently open
+        if Library.MenuOpen then
+            Library.BlurEffect.Size = Library.BlurStrength or 24
         end
     else
         if Library.BlurEffect then
-            Library.BlurEffect.Enabled = false
+            Library.BlurEffect.Size = 0
         end
     end
 end
 
 function Library:SetBlurTransparency(Value)
-    if Library.BlurEffect then
-        Library.BlurEffect.Size = math.floor((1 - Value) * 56)
+    -- Value 0-1, we convert to blur size (0 = no blur, 1 = full blur size 56)
+    Library.BlurStrength = math.floor(Value * 56)
+    if Library.BlurEffect and Library.MenuOpen then
+        Library.BlurEffect.Size = Library.BlurStrength
+    end
+end
+
+function Library:UpdateBlurForMenuState(IsOpen)
+    Library.MenuOpen = IsOpen
+    if Library.BlurWanted and Library.BlurEffect then
+        if IsOpen then
+            -- Tween blur in
+            local target = Library.BlurStrength or 24
+            Library.BlurEffect.Size = 0
+            local step = 0
+            task.spawn(function()
+                while step < target and Library.MenuOpen do
+                    step = math.min(step + 4, target)
+                    Library.BlurEffect.Size = step
+                    task.wait(0.016)
+                end
+            end)
+        else
+            -- Tween blur out
+            local current = Library.BlurEffect.Size
+            task.spawn(function()
+                while current > 0 and not Library.MenuOpen do
+                    current = math.max(current - 4, 0)
+                    Library.BlurEffect.Size = current
+                    task.wait(0.016)
+                end
+            end)
+        end
     end
 end
 
@@ -3871,6 +3904,8 @@ function Library:Notify(Text, Time)
         Parent = Library.NotificationArea;
     });
 
+    local bgTransparency = Library.NotifBackgroundTransparency or 0
+
     local NotifyInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
         BorderColor3 = Library.OutlineColor;
@@ -3887,6 +3922,7 @@ function Library:Notify(Text, Time)
 
     local InnerFrame = Library:Create('Frame', {
         BackgroundColor3 = Color3.new(1, 1, 1);
+        BackgroundTransparency = bgTransparency;
         BorderSizePixel = 0;
         Position = UDim2.new(0, 1, 0, 1);
         Size = UDim2.new(1, -2, 1, -2);
@@ -3922,16 +3958,34 @@ function Library:Notify(Text, Time)
         Parent = InnerFrame;
     });
 
-    local LeftColor = Library:Create('Frame', {
-        BackgroundColor3 = Library.AccentColor;
+    -- Bar side logic
+    local barSide = Library.NotifBarSide or 'Left'
+    local accentColor = Library.NotifAccentColor1 or Library.AccentColor
+
+    local barProps = {
+        BackgroundColor3 = accentColor;
         BorderSizePixel = 0;
-        Position = UDim2.new(0, -1, 0, -1);
-        Size = UDim2.new(0, 3, 1, 2);
         ZIndex = 104;
         Parent = NotifyOuter;
-    });
+    }
 
-    Library:AddToRegistry(LeftColor, {
+    if barSide == 'Left' then
+        barProps.Position = UDim2.new(0, -1, 0, -1)
+        barProps.Size = UDim2.new(0, 3, 1, 2)
+    elseif barSide == 'Right' then
+        barProps.Position = UDim2.new(1, -2, 0, -1)
+        barProps.Size = UDim2.new(0, 3, 1, 2)
+    elseif barSide == 'Top' then
+        barProps.Position = UDim2.new(0, -1, 0, -1)
+        barProps.Size = UDim2.new(1, 2, 0, 3)
+    elseif barSide == 'Bottom' then
+        barProps.Position = UDim2.new(0, -1, 1, -2)
+        barProps.Size = UDim2.new(1, 2, 0, 3)
+    end
+
+    local AccentBar = Library:Create('Frame', barProps);
+
+    Library:AddToRegistry(AccentBar, {
         BackgroundColor3 = 'AccentColor';
     }, true);
 
@@ -4757,7 +4811,7 @@ end;
         Parent = ScreenGui;
     });
 
-    local TransparencyCache = {};
+local TransparencyCache = {};
     local Toggled = false;
     local Fading = false;
 
@@ -4770,6 +4824,7 @@ end;
         Fading = true;
         Toggled = (not Toggled);
         ModalElement.Modal = Toggled;
+        Library:UpdateBlurForMenuState(Toggled);
 
         if Toggled then
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
