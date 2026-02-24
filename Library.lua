@@ -4496,7 +4496,7 @@ AnimatedTitle:Start()
 local TabArea = Library:Create('Frame', {
     BackgroundTransparency = 1;
     Position = UDim2.new(0, 8, 0, 4);
-    Size = UDim2.new(1, -16, 0, 21);
+    Size = UDim2.new(1, -16, 0, 28);
     ZIndex = 1;
     Parent = MainSectionInner;
 });
@@ -4508,11 +4508,11 @@ local TabArea = Library:Create('Frame', {
         Parent = TabArea;
     });
 
-    local TabContainer = Library:Create('Frame', {
+local TabContainer = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
         BorderColor3 = Library.OutlineColor;
-        Position = UDim2.new(0, 8, 0, 30);
-        Size = UDim2.new(1, -16, 1, -38);
+        Position = UDim2.new(0, 8, 0, 37);
+        Size = UDim2.new(1, -16, 1, -45);
         ZIndex = 2;
         Parent = MainSectionInner;
     });
@@ -4541,10 +4541,10 @@ end;
 
         local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
 
-        local TabButton = Library:Create('Frame', {
+local TabButton = Library:Create('Frame', {
             BackgroundColor3 = Library.BackgroundColor;
             BorderColor3 = Library.OutlineColor;
-            Size = UDim2.new(0, TabButtonWidth + 8 + 4, 1, 0);
+            Size = UDim2.new(0, TabButtonWidth + 16 + 4, 1, 0);
             ZIndex = 1;
             Parent = TabArea;
         });
@@ -4561,11 +4561,10 @@ end;
             ZIndex = 1;
             Parent = TabButton;
         });
-
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 0, 0);
+    Position = UDim2.new(0, 0, 1, -2);
     Size = UDim2.new(1, 0, 0, 2);
     BackgroundTransparency = 1;
     ZIndex = 10;
