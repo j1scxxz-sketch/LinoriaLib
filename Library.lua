@@ -23,6 +23,18 @@ local Options = {};
 getgenv().Toggles = Toggles;
 getgenv().Options = Options;
 
+local CustomFont = Font.new(
+    "rbxassetid://", -- placeholder, see below
+    Enum.FontWeight.Regular,
+    Enum.FontStyle.Normal
+)
+
+-- Load from URL
+local success, result = pcall(function()
+    return Font.new("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
+end)
+if success then CustomFont = result end
+
 local Library = {
     Registry = {};
     RegistryMap = {};
@@ -37,7 +49,7 @@ local Library = {
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
-    Font = Enum.Font.Code,
+    Font = Font.new("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf"),
 
     -- Glow effect settings
     GlowEnabled = true;
@@ -4570,17 +4582,18 @@ local TabGradient = Library:Create('UIGradient', {
 
 local TabButtonLabel = Library:CreateLabel({
     Position = UDim2.new(0, 0, 0, 0);
-    Size = UDim2.new(1, 0, 1, -3);
+    Size = UDim2.new(1, 0, 1, -1);
     Text = Name;
-    TextSize = 13;
+    TextSize = 14;
     ZIndex = 2;
     Parent = TabButton;
 });
 
+-- Top accent indicator bar
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0.1, 0, 1, -3);
+    Position = UDim2.new(0.1, 0, 0, 0);
     Size = UDim2.new(0.8, 0, 0, 3);
     BackgroundTransparency = 1;
     ZIndex = 10;
