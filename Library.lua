@@ -9,6 +9,21 @@ local RenderStepped = RunService.RenderStepped;
 local LocalPlayer = Players.LocalPlayer;
 local Mouse = cloneref(LocalPlayer:GetMouse());
 
+local CustomFont
+pcall(function()
+    local FontId = game:GetService('ContentProvider'):PreloadAsync({'rbxasset://fonts/CustomFont.ttf'})
+end)
+
+local success, result = pcall(function()
+    return Font.new("rbxassetid://fonts/CustomFont.ttf")
+end)
+
+-- Load custom font from URL
+local HttpService = cloneref(game:GetService('HttpService'))
+local fontData = game:HttpGet("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
+local fontFile = writefile("CustomFont.ttf", fontData)
+CustomFont = Font.new("rbxassetid://" .. getcustomasset("CustomFont.ttf"))
+
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 
 local ScreenGui = Instance.new('ScreenGui');
@@ -37,7 +52,7 @@ local Library = {
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
-    Font = Enum.Font.Code,
+    Font = CustomFont or Enum.Font.Code,
 
     -- Glow effect settings
     GlowEnabled = true;
