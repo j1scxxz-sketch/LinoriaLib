@@ -4561,10 +4561,7 @@ end;
     ClipsDescendants = true;
 });
 
-Library:Create('UICorner', {
-    CornerRadius = UDim.new(0, 5);
-    Parent = TabButton;
-});
+
 
 Library:AddToRegistry(TabButton, {
     BackgroundColor3 = 'BackgroundColor';
@@ -4709,7 +4706,7 @@ function Tab:HideTab()
     Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor';
     TabFrame.Visible = false;
 
-    TabButtonLabel.TextColor3 = Color3.fromRGB(160, 160, 160);
+    TabButtonLabel.TextColor3 = Library.FontColor;
     Library.RegistryMap[TabButtonLabel].Properties.TextColor3 = 'FontColor';
 
     TweenService:Create(TabIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -4720,7 +4717,6 @@ function Tab:HideTab()
         BackgroundColor3 = Library.BackgroundColor
     }):Play();
 end;
-
         function Tab:SetLayoutOrder(Position)
             TabButton.LayoutOrder = Position;
             TabListLayout:ApplyLayout();
