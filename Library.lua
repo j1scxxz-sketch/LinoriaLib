@@ -9,24 +9,6 @@ local RenderStepped = RunService.RenderStepped;
 local LocalPlayer = Players.LocalPlayer;
 local Mouse = cloneref(LocalPlayer:GetMouse());
 
-local CustomFont
-local HttpService = cloneref(game:GetService('HttpService'))
-pcall(function()
-    local fontData = game:HttpGet("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
-    writefile("Tahoma.ttf", fontData)
-    local data = {
-        name = "Tahoma",
-        faces = {{
-            name = "Regular",
-            weight = 400,
-            style = "normal",
-            assetId = getcustomasset("Tahoma.ttf")
-        }}
-    }
-    writefile("Tahoma.font", HttpService:JSONEncode(data))
-    CustomFont = Font.new(getcustomasset("Tahoma.font"))
-end)
-
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 
 local ScreenGui = Instance.new('ScreenGui');
@@ -55,7 +37,7 @@ local Library = {
     RiskColor = Color3.fromRGB(255, 50, 50),
 
     Black = Color3.new(0, 0, 0);
-    Font = CustomFont and Enum.Font.Unknown or Enum.Font.Code,
+    Font = Enum.Font.Code,
 
     -- Glow effect settings
     GlowEnabled = true;
@@ -4579,6 +4561,7 @@ local TabButton = Library:Create('Frame', {
             ZIndex = 1;
             Parent = TabButton;
         });
+
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
@@ -4588,6 +4571,7 @@ local TabIndicator = Library:Create('Frame', {
     ZIndex = 10;
     Parent = TabButton;
 });
+
 Library:AddToRegistry(TabIndicator, {
     BackgroundColor3 = 'AccentColor';
 });
