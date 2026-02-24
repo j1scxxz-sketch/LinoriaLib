@@ -10,19 +10,22 @@ local LocalPlayer = Players.LocalPlayer;
 local Mouse = cloneref(LocalPlayer:GetMouse());
 
 local CustomFont
-pcall(function()
-    local FontId = game:GetService('ContentProvider'):PreloadAsync({'rbxasset://fonts/CustomFont.ttf'})
-end)
-
-local success, result = pcall(function()
-    return Font.new("rbxassetid://fonts/CustomFont.ttf")
-end)
-
--- Load custom font from URL
 local HttpService = cloneref(game:GetService('HttpService'))
-local fontData = game:HttpGet("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
-local fontFile = writefile("CustomFont.ttf", fontData)
-CustomFont = Font.new("rbxassetid://" .. getcustomasset("CustomFont.ttf"))
+pcall(function()
+    local fontData = game:HttpGet("https://github.com/LuckyHub1/LuckyHub/raw/main/zekton_rg.ttf")
+    writefile("Tahoma.ttf", fontData)
+    local data = {
+        name = "Tahoma",
+        faces = {{
+            name = "Regular",
+            weight = 400,
+            style = "normal",
+            assetId = getcustomasset("Tahoma.ttf")
+        }}
+    }
+    writefile("Tahoma.font", HttpService:JSONEncode(data))
+    CustomFont = Font.new(getcustomasset("Tahoma.font"))
+end)
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 
