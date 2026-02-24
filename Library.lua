@@ -4564,13 +4564,12 @@ local TabButton = Library:Create('Frame', {
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 1, -2);
+    Position = UDim2.new(0, 0, 0, 0);
     Size = UDim2.new(1, 0, 0, 2);
     BackgroundTransparency = 1;
     ZIndex = 10;
     Parent = TabButton;
 });
-
 Library:AddToRegistry(TabIndicator, {
     BackgroundColor3 = 'AccentColor';
 });
