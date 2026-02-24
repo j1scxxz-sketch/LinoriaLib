@@ -4496,7 +4496,7 @@ AnimatedTitle:Start()
 local TabArea = Library:Create('Frame', {
     BackgroundTransparency = 1;
     Position = UDim2.new(0, 8, 0, 4);
-    Size = UDim2.new(1, -16, 0, 21);
+    Size = UDim2.new(1, -16, 0, 28);
     ZIndex = 1;
     Parent = MainSectionInner;
 });
@@ -4508,15 +4508,14 @@ local TabArea = Library:Create('Frame', {
         Parent = TabArea;
     });
 
-    local TabContainer = Library:Create('Frame', {
-        BackgroundColor3 = Library.MainColor;
-        BorderColor3 = Library.OutlineColor;
-        Position = UDim2.new(0, 8, 0, 30);
-        Size = UDim2.new(1, -16, 1, -38);
-        ZIndex = 2;
-        Parent = MainSectionInner;
-    });
-    
+local TabContainer = Library:Create('Frame', {
+    BackgroundColor3 = Library.MainColor;
+    BorderColor3 = Library.OutlineColor;
+    Position = UDim2.new(0, 8, 0, 37);
+    Size = UDim2.new(1, -16, 1, -45);
+    ZIndex = 2;
+    Parent = MainSectionInner;
+});
 
     Library:AddToRegistry(TabContainer, {
         BackgroundColor3 = 'MainColor';
@@ -4541,54 +4540,75 @@ end;
 
         local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
 
-        local TabButton = Library:Create('Frame', {
-            BackgroundColor3 = Library.BackgroundColor;
-            BorderColor3 = Library.OutlineColor;
-            Size = UDim2.new(0, TabButtonWidth + 8 + 4, 1, 0);
-            ZIndex = 1;
-            Parent = TabArea;
-        });
+  local TabButton = Library:Create('Frame', {
+    BackgroundColor3 = Library.BackgroundColor;
+    BorderColor3 = Library.OutlineColor;
+    Size = UDim2.new(0, TabButtonWidth + 20, 1, 0);
+    ZIndex = 1;
+    Parent = TabArea;
+    ClipsDescendants = true;
+});
 
-        Library:AddToRegistry(TabButton, {
-            BackgroundColor3 = 'BackgroundColor';
-            BorderColor3 = 'OutlineColor';
-        });
+Library:Create('UICorner', {
+    CornerRadius = UDim.new(0, 5);
+    Parent = TabButton;
+});
 
-        local TabButtonLabel = Library:CreateLabel({
-            Position = UDim2.new(0, 0, 0, 0);
-            Size = UDim2.new(1, 0, 1, -1);
-            Text = Name;
-            ZIndex = 1;
-            Parent = TabButton;
-        });
+Library:AddToRegistry(TabButton, {
+    BackgroundColor3 = 'BackgroundColor';
+    BorderColor3 = 'OutlineColor';
+});
+
+local TabGradient = Library:Create('UIGradient', {
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 28, 28)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 16, 16)),
+    });
+    Rotation = 90;
+    Parent = TabButton;
+});
+
+local TabButtonLabel = Library:CreateLabel({
+    Position = UDim2.new(0, 0, 0, 0);
+    Size = UDim2.new(1, 0, 1, -3);
+    Text = Name;
+    TextSize = 13;
+    ZIndex = 2;
+    Parent = TabButton;
+});
 
 local TabIndicator = Library:Create('Frame', {
     BackgroundColor3 = Library.AccentColor;
     BorderSizePixel = 0;
-    Position = UDim2.new(0, 0, 0, 0);
-    Size = UDim2.new(1, 0, 0, 2);
+    Position = UDim2.new(0.1, 0, 1, -3);
+    Size = UDim2.new(0.8, 0, 0, 3);
     BackgroundTransparency = 1;
     ZIndex = 10;
     Parent = TabButton;
+});
+
+Library:Create('UICorner', {
+    CornerRadius = UDim.new(1, 0);
+    Parent = TabIndicator;
 });
 
 Library:AddToRegistry(TabIndicator, {
     BackgroundColor3 = 'AccentColor';
 });
 
-        local Blocker = Library:Create('Frame', {
-            BackgroundColor3 = Library.MainColor;
-            BorderSizePixel = 0;
-            Position = UDim2.new(0, 0, 1, 0);
-            Size = UDim2.new(1, 0, 0, 1);
-            BackgroundTransparency = 1;
-            ZIndex = 3;
-            Parent = TabButton;
-        });
+local Blocker = Library:Create('Frame', {
+    BackgroundColor3 = Library.MainColor;
+    BorderSizePixel = 0;
+    Position = UDim2.new(0, 0, 1, 0);
+    Size = UDim2.new(1, 0, 0, 1);
+    BackgroundTransparency = 1;
+    ZIndex = 3;
+    Parent = TabButton;
+});
 
-        Library:AddToRegistry(Blocker, {
-            BackgroundColor3 = 'MainColor';
-        });
+Library:AddToRegistry(Blocker, {
+    BackgroundColor3 = 'MainColor';
+});
 
         local TabFrame = Library:Create('Frame', {
             Name = 'TabFrame',
@@ -4657,10 +4677,16 @@ function Tab:ShowTab()
     TabButton.BackgroundColor3 = Library.MainColor;
     Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'MainColor';
     TabFrame.Visible = true;
-    
-    -- Animate indicator in
+
+    TabButtonLabel.TextColor3 = Library.AccentColor;
+    Library.RegistryMap[TabButtonLabel].Properties.TextColor3 = 'AccentColor';
+
     TweenService:Create(TabIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         BackgroundTransparency = 0
+    }):Play();
+
+    TweenService:Create(TabButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundColor3 = Library.MainColor
     }):Play();
 end;
 
@@ -4669,10 +4695,16 @@ function Tab:HideTab()
     TabButton.BackgroundColor3 = Library.BackgroundColor;
     Library.RegistryMap[TabButton].Properties.BackgroundColor3 = 'BackgroundColor';
     TabFrame.Visible = false;
-    
-    -- Animate indicator out
+
+    TabButtonLabel.TextColor3 = Color3.fromRGB(160, 160, 160);
+    Library.RegistryMap[TabButtonLabel].Properties.TextColor3 = 'FontColor';
+
     TweenService:Create(TabIndicator, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         BackgroundTransparency = 1
+    }):Play();
+
+    TweenService:Create(TabButton, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        BackgroundColor3 = Library.BackgroundColor
     }):Play();
 end;
 
