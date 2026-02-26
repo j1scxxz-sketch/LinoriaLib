@@ -3866,6 +3866,91 @@ end;
         return Depbox;
     end;
 
+    function Funcs:AddImage(Idx, Info)
+        local Groupbox = self;
+        local Container = Groupbox.Container;
+
+        if Info.Text then
+            Library:CreateLabel({
+                Size = UDim2.new(1, 0, 0, 10);
+                TextSize = 14;
+                Text = Info.Text;
+                TextXAlignment = Enum.TextXAlignment.Left;
+                TextYAlignment = Enum.TextYAlignment.Bottom;
+                ZIndex = 5;
+                Parent = Container;
+            });
+            Groupbox:AddBlank(3);
+        end
+
+        local ImageOuter = Library:Create('Frame', {
+            BackgroundColor3 = Color3.new(0, 0, 0);
+            BorderColor3 = Color3.new(0, 0, 0);
+            Size = UDim2.new(1, -4, 0, Info.Height or 100);
+            ZIndex = 5;
+            Parent = Container;
+        });
+
+        Library:AddToRegistry(ImageOuter, {
+            BorderColor3 = 'Black';
+        });
+
+        local ImageInner = Library:Create('Frame', {
+            BackgroundColor3 = Library.MainColor;
+            BorderColor3 = Library.OutlineColor;
+            BorderMode = Enum.BorderMode.Inset;
+            Size = UDim2.new(1, 0, 1, 0);
+            ZIndex = 6;
+            Parent = ImageOuter;
+        });
+
+        Library:AddToRegistry(ImageInner, {
+            BackgroundColor3 = 'MainColor';
+            BorderColor3 = 'OutlineColor';
+        });
+
+        local ImageLabel = Library:Create('ImageLabel', {
+            BackgroundTransparency = 1;
+            Size = UDim2.new(1, -2, 1, -2);
+            Position = UDim2.new(0, 1, 0, 1);
+            Image = Info.Image or '';
+            ScaleType = Info.ScaleType or Enum.ScaleType.Fit;
+            ZIndex = 7;
+            Parent = ImageInner;
+        });
+
+        if Info.Rounding and Info.Rounding > 0 then
+            Library:Create('UICorner', {
+                CornerRadius = UDim.new(0, Info.Rounding);
+                Parent = ImageLabel;
+            });
+        end
+
+        local ImageObj = {
+            Type = 'Image';
+            ImageLabel = ImageLabel;
+        };
+
+        function ImageObj:SetImage(Id)
+            ImageLabel.Image = Id;
+            Library:SafeCallback(Info.Callback, Id);
+        end
+
+        function ImageObj:SetVisible(Bool)
+            ImageOuter.Visible = Bool;
+            Groupbox:Resize();
+        end
+
+        Groupbox:AddBlank(Info.BlankSize or 5);
+        Groupbox:Resize();
+
+        if Idx then
+            Options[Idx] = ImageObj;
+        end
+
+        return ImageObj;
+    end;
+
     BaseGroupbox.__index = Funcs;
     BaseGroupbox.__namecall = function(Table, Key, ...)
         return Funcs[Key](...);
